@@ -19,4 +19,8 @@ unsigned int IsInside(const MatrixXd& polygon, Vector3d normal, Vector3d point);
 //ordina le traccie della fratture
 void SortingFractureTraces(const Fractures& fratture, Traces& tracce);
 
+Vector3d normaleP(const MatrixXd& frattura);
+
+bool TracciaTraPoligoni(const MatrixXd& frattura1,const MatrixXd& frattura2, Vector3d& E1, Vector3d& E2, bool& tips1, bool& tips2);
+
 }
