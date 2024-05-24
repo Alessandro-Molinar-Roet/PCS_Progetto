@@ -35,5 +35,11 @@ struct Traces{
     map<unsigned int, vector<list<unsigned int>>> Dfn = {};
 };
 
+struct Frattura{
+    unsigned int num = 0;
+    vector<unsigned int> f_ID = {};
+    vector<Matrix3Xd> f_Vertices {};
+};
+
 
 }
