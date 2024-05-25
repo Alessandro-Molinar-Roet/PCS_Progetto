@@ -16,15 +16,6 @@ void SortingFractureTraces(Traces& tracce);
 //stampa su file traccie
 bool PrintTrace(const string& filepath, const Traces& tracce);
 
-
-//********************************************************************************************************************
-
-
-Vector4d piano(const MatrixXd& frattura);
-
-
-
-
 //stampa su file frattura con relative traccie ordinate (tips-lunghezza)
 bool PrintFractureTraces(const string& filepath, const Traces& tracce);
 

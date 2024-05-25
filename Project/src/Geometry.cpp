@@ -112,10 +112,12 @@ void CalculateFracture(const Fractures& fratture, Traces& tracce){
             }
         }
     }
-    if(edges_counter == 2){
+    if(edges_counter == 2)
+    {
         tips = false; // è passante per first polygon salvare in struddura giusta tips
     }
-    if(edges_on == 2){
+    if(edges_on == 2)
+    {
         cout << "shortcut" << endl; //ATTENZIONE funziona? posso migliorare leggibilita?
         tips2 = false;
     }
@@ -150,11 +152,12 @@ Vector3d normaleP(const MatrixXd& frattura)
 }
 bool TracciaTraPoligoni(const MatrixXd& frattura1,const MatrixXd& frattura2, Vector3d& E1, Vector3d& E2, bool& tips1, bool& tips2)
 {
-    //Calcolo la direzione della retta
+    //Considero la retta di intersezione tra i due piani che contengono i poligoni
+    //Calcolo la direzione della retta come prodotto vettoriale tra le normali ai piani
     Vector3d n1 = normaleP(frattura1);
     Vector3d n2 = normaleP(frattura2);
     Vector3d direzione = n1.cross(n2).normalized();
-    //Se il prodotto vettoriale è nullo, le normali sono parallele e i piani non si intersecano
+    //Se il prodotto vettoriale è nullo, i piani parallele
     if(abs(direzione.norm()) < 0.00001){ //abs<tol
         return false;
     }
@@ -162,11 +165,12 @@ bool TracciaTraPoligoni(const MatrixXd& frattura1,const MatrixXd& frattura2, Vec
     Vector3d lato = frattura2.col(1)-frattura2.col(0);
     Vector3d punto = frattura2.col(0);
     //Controllo che quel lato non sia parallelo al piano, e se lo è, prendo il lato successivo
-    if(lato.dot(n1)==0){
+    if(lato.dot(n1)==0)
+    {
         lato = frattura2.col(2)-frattura2.col(1);
         punto = frattura2.col(1);
     }
-    //Soluzione dell'intersezione piano retta
+    //Soluzione dell'intersezione piano-retta
     double t = -(n1.dot(punto-frattura1.col(0)))/(n1.dot(lato));
     Vector3d puntoRetta = punto+t*lato;
     //Ora controlliamo se il poligono interseca la retta
@@ -174,10 +178,12 @@ bool TracciaTraPoligoni(const MatrixXd& frattura1,const MatrixXd& frattura2, Vec
 
     vector<Vector3d> intersezioni;
     for(unsigned int i=0;i<frattura1.cols();i++){
+        //Nel momento in cui trovo due intersezioni, non mi serve controllare i lati rimanenti
         if(intersezioni.size()==2)
         {
             break;
         }
+        //intersezione lato-retta
         Vector3d puntoipoly1 = frattura1.col(i);
         Vector3d latoipoly1 =frattura1.col((i+1)%frattura1.cols())-frattura1.col(i);
         double t = ((puntoRetta.cross(direzione)).dot((latoipoly1.cross(direzione)))-(puntoipoly1.cross(direzione)).dot((latoipoly1.cross(direzione))))/pow((latoipoly1.cross(direzione)).norm(), 2);
@@ -186,7 +192,9 @@ bool TracciaTraPoligoni(const MatrixXd& frattura1,const MatrixXd& frattura2, Vec
             intersezioni.push_back(puntoipoly1 + t * latoipoly1);
         }
     }
-    if (intersezioni.size() < 2) {
+    //Se il primo poligono non ha intersezioni con la retta, non serve controllare il secondo poligono
+    if (intersezioni.size() < 2)
+    {
         return false;
     }
 
@@ -210,6 +218,7 @@ bool TracciaTraPoligoni(const MatrixXd& frattura1,const MatrixXd& frattura2, Vec
         return false;
     }
 
+    //Identifico i 4 punti trovati sulla retta
     double a = ((intersezioni[0]-puntoRetta).dot(direzione))/(direzione.norm()*direzione.norm());
     double b = ((intersezioni[1]-puntoRetta).dot(direzione))/(direzione.norm()*direzione.norm());
     //a e b sono delle posizioni relative a puntoRetta, ma non so come sono ordinati perché questo dipende
@@ -235,7 +244,7 @@ bool TracciaTraPoligoni(const MatrixXd& frattura1,const MatrixXd& frattura2, Vec
     {
         return false;
     }
-    //c'è un'intersezione "propria"
+    //c'è un'intersezione "propria", le tracce sono non-passanti per entrambe le fratture
     if(a<c && c<b && b<d)
     {
         E1 = intersezioni[2];
@@ -259,7 +268,8 @@ bool TracciaTraPoligoni(const MatrixXd& frattura1,const MatrixXd& frattura2, Vec
         E2 = intersezioni[3];
         tips2 = false;
         tips1 = true;
-        if(a==c && d == b){
+        if(a==c && d == b)
+        {
             tips1 = false;
         }
         return true;
@@ -270,7 +280,8 @@ bool TracciaTraPoligoni(const MatrixXd& frattura1,const MatrixXd& frattura2, Vec
         E2 = intersezioni[1];
         tips1 = false;
         tips2 = true;
-        if(a==c && d == b){
+        if(a==c && d == b)
+        {
             tips2 = false;
         }
         return true;

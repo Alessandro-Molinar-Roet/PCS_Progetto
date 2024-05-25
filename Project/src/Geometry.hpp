@@ -19,8 +19,10 @@ unsigned int IsInside(const MatrixXd& polygon, Vector3d normal, Vector3d point);
 //ordina le traccie della fratture
 void SortingFractureTraces(const Fractures& fratture, Traces& tracce);
 
+//Calcola la normale al piano che contiene la frattura
 Vector3d normaleP(const MatrixXd& frattura);
 
+//Trova se c'è interesezione tra due fratture, nel caso calcola gli estremi del segmento e dice se la traccia è passante o meno
 bool TracciaTraPoligoni(const MatrixXd& frattura1,const MatrixXd& frattura2, Vector3d& E1, Vector3d& E2, bool& tips1, bool& tips2);
 
 }

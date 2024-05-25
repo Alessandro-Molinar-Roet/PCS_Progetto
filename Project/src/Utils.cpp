@@ -137,7 +137,5 @@ bool PrintFractureTraces(const string& filepath, const Traces& tracce){
 }
 
 }
-//**********************************************************************************
-//Per ogni poligono, trovo la normale del piano su cui giace
 
 
