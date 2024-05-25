@@ -2,8 +2,8 @@
 #include "FracturesNetworkLibrary.hpp"
 #include "Utils.hpp"
 #include "Geometry.hpp"
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 
 using namespace std;
 using namespace FractureNetwork;
@@ -20,7 +20,6 @@ int main()
         return 1;
     }
 
- /*
     //CHECK:
     // Stampa il contenuto del vettore di fratture
     cout << fratture.num << endl;
@@ -28,11 +27,12 @@ int main()
     for (const auto& matrice : fratture.f_Vertices) {
         cout << setprecision(10) << fixed <<matrice << endl << endl;
     }
-*/
-    CalculateFracture(fratture,tracce);
+
+
+    CalculateTraces(fratture,tracce);
     SortingFractureTraces(tracce);
 
-/*
+
     //CHECK:
     // Stampa il contenuto del vettore di tracce
     cout << "Contenuto del vettore di tracce:\n";
@@ -40,8 +40,7 @@ int main()
         cout << setprecision(10) << fixed << matrice << endl << endl;
     }
 
- */
-
+    //Print
     string traceFile = "tracce.txt";
     bool printed = PrintTrace(traceFile, tracce);
     if(!printed){
@@ -53,12 +52,10 @@ int main()
         return 1;
     }
 
-//     //PUNTO 2:
-//     //
-//     //
+    //     //PUNTO 2:
+    //     //
+    //     //
+    cout << "okay" << endl;
 
-
-cout << "okay" << endl;
-
-  return 0;
+    return 0;
 }
