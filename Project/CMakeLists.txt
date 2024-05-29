@@ -45,18 +45,18 @@ list(APPEND ${CMAKE_PROJECT_NAME}_headers ${src_headers})
 list(APPEND ${CMAKE_PROJECT_NAME}_includes ${src_includes})
 
 # Test
-add_subdirectory(src_test)
+#add_subdirectory(src_test)
 
-list(APPEND ${CMAKE_PROJECT_NAME}_TEST_sources ${src_test_sources})
-list(APPEND ${CMAKE_PROJECT_NAME}_TEST_headers ${src_test_headers})
-list(APPEND ${CMAKE_PROJECT_NAME}_TEST_includes ${src_test_includes})
+#list(APPEND ${CMAKE_PROJECT_NAME}_TEST_sources ${src_test_sources})
+#list(APPEND ${CMAKE_PROJECT_NAME}_TEST_headers ${src_test_headers})
+#list(APPEND ${CMAKE_PROJECT_NAME}_TEST_includes ${src_test_includes})
 
 # Paraview
-add_subdirectory(src_paraview)
+#add_subdirectory(src_paraview)
 
-list(APPEND ${CMAKE_PROJECT_NAME}_PARAVIEW_sources ${src_paraview_sources})
-list(APPEND ${CMAKE_PROJECT_NAME}_PARAVIEW_headers ${src_paraview_headers})
-list(APPEND ${CMAKE_PROJECT_NAME}_PARAVIEW_includes ${src_paraview_includes})
+#list(APPEND ${CMAKE_PROJECT_NAME}_PARAVIEW_sources ${src_paraview_sources})
+#list(APPEND ${CMAKE_PROJECT_NAME}_PARAVIEW_headers ${src_paraview_headers})
+#list(APPEND ${CMAKE_PROJECT_NAME}_PARAVIEW_includes ${src_paraview_includes})
 
 # Create executable
 ################################################################################

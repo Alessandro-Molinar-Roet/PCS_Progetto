@@ -1,7 +1,9 @@
 //Librerie
-#include"FracturesNetworkLibrary.hpp"
-#include"Utils.hpp"
-#include<iomanip>
+#include "FracturesNetworkLibrary.hpp"
+#include "Utils.hpp"
+#include "Geometry.hpp"
+#include <iomanip>
+#include <iostream>
 
 using namespace std;
 using namespace FractureNetwork;
@@ -26,24 +28,36 @@ int main()
     //     cout << setprecision(10) << fixed <<matrice << endl << endl;
     // }
 
-    CalculateFracture(fratture,tracce);
 
-    // // CHECK:
-    // // Stampa il contenuto del vettore di traccie
-    // cout << "Contenuto del vettore di traccie:\n";
-    // for (const auto& matrice : tracce.t_Vertices) {
-    //     cout << setprecision(10) << fixed << matrice << endl << endl;
-    // }
+    CalculateTraces(fratture,tracce);
+    SortingFractureTraces(tracce);
 
-    // //PUNTO 1:
-    // //prossimi passi:
-    // //stampare traccie PrintTrace
-    // //ordinare per stampare per fratture le sue traccie Sort e PrintDFN
 
-    // //PUNTO 2:
-    // //
-    // //
 
-    // cout << "okay" << endl;
-  return 0;
+    //CHECK:
+    // Stampa il contenuto del vettore di tracce
+    cout << "Contenuto del vettore di tracce:\n";
+    for (const auto& matrice : tracce.t_Vertices) {
+        cout << setprecision(10) << fixed << matrice << endl << endl;
+    }
+
+    //Print
+    string traceFile = "tracce.txt";
+    bool printed = PrintTrace(traceFile, tracce);
+    if(!printed){
+        return 1;
+    }
+    string tracceFile2 = "fratture_tracce.txt";
+    bool printed2 = PrintFractureTraces(tracceFile2, tracce);
+    if(!printed2){
+        return 1;
+    }
+
+    //     //PUNTO 2:
+    //     //
+    //     //
+    cout << "okay" << endl;
+
+    return 0;
+
 }
