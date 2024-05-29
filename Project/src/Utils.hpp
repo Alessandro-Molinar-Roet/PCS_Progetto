@@ -16,7 +16,9 @@ bool ImportFractures(const string& filepath, Fractures& fratture);
 void CalculateFracture(const Fractures& fratture, Traces& tracce);// non voglio modificare fratture o si? const & vs const & const
 
 //prende due matrici contenenti vertici poligono e controlla se potrebbero avere intersezioni
-bool near(const MatrixXd& first_polygon, const MatrixXd& secodn_polygon);
+bool near1(const MatrixXd& first_polygon, const MatrixXd& secodn_polygon);
+
+bool near2(const MatrixXd& first_polygon, const MatrixXd& secodn_polygon);
 
 //trova l'intersezione tra i lati di first_polygon e secodn_polygon
 void FindIntersection(const MatrixXd& first_polygon, const MatrixXd& second_polyogn, Matrix<double, 3, 2>& vertices, bool& find, bool& complete);

@@ -1,6 +1,10 @@
 #include<fstream>
 #include"Utils.hpp"
 #include"math.h"
+#include "Eigen/Dense"
+
+using namespace Eigen;
+using namespace std;
 
 namespace FractureNetwork {
 
@@ -27,19 +31,23 @@ bool ImportFractures(const string& filepath, Fractures& fratture){
     unsigned int counter = 0;
     unsigned int matrix_counter = 0;
     unsigned int num_vertices = 0;
-    while (getline(file, line)){
+    while (getline(file, line))
+    {
         istringstream converter(line); //ATTENZIONE efficente crearlo anche qundo non lo uso?
         char temp = ' ';
-        if(counter == 1){ //linea ID; num_vertici
+        if(counter == 1) //linea ID; num_vertici
+        {
             converter >> fratture.f_ID[matrix_counter] >> temp >> num_vertices;
             fratture.f_Vertices[matrix_counter].resize(3,num_vertices);
         }
-        if((counter>=3) && (counter<=5)){ //linee di coordinate vertici (e1; e1; e3; e4; ...)
+        if((counter>=3) && (counter<=5)) //linee di coordinate vertici (e1; e1; e3; e4; ...)
+        {
             for(unsigned int i = 0; i<num_vertices; i++){
                 converter >> fratture.f_Vertices[matrix_counter](counter-3,i) >> temp;
             }
         }
-        if(counter == 6){ //linea intestazione (sommando subito dopo salto header)
+        if(counter == 6) //linea intestazione (sommando subito dopo salto header)
+        {
             matrix_counter ++;
             counter = 0;
         }
@@ -53,12 +61,24 @@ bool ImportFractures(const string& filepath, Fractures& fratture){
 //calcola tutte le traccie e se sono passatnti o non passatni e le salva DOVE E COME??????
 void CalculateFracture(const Fractures& fratture, Traces& tracce){
     unsigned int counter = 0;
-    for(unsigned int i = 0; i<fratture.num; i++){ //ciclo su tutte le matrici (piani)
+    double counter1 = 0;
+    double counter2 = 0;
+    for(unsigned int i = 0; i < fratture.num; i++)
+    { //ciclo su tutte le matrici (piani)
         MatrixXd first_polygon = fratture.f_Vertices[i];
         for(unsigned int j = i+1; j<fratture.num; j++ ){ // controllo tutte le coppie da >i (altre gia cocntrollate precendemente)
             MatrixXd second_polygon = fratture.f_Vertices[j];
-
-            if(near(first_polygon, second_polygon)){
+            if (near2(first_polygon, second_polygon))
+            {
+                counter1 ++;
+            }
+            if (near1(first_polygon, second_polygon))
+            {
+                counter2 ++;
+            }
+            if(near1(first_polygon, second_polygon))
+            {
+                // cout <<"Intersection is possible" << endl;
                 Matrix<double, 3, 2> vertices = {};
                 bool find = false;
                 bool complete = false;
@@ -80,8 +100,14 @@ void CalculateFracture(const Fractures& fratture, Traces& tracce){
                     tracce.num = counter;
                 }
             }
+            else
+            {
+                cout << "Intersection is impossible" << endl;
+            }
         }
     }
+    cout << counter1 << endl;
+    cout << counter2 << endl;
 }
 
 void FindIntersection(const MatrixXd& first_polygon, const MatrixXd& second_polygon, Matrix<double, 3, 2>& vertices, bool& find, bool& complete){
@@ -160,9 +186,137 @@ unsigned int IsInside(const MatrixXd& polygon, Vector3d normal, Vector3d point){
 }
 
 
-bool near(const MatrixXd& first_polygon, const MatrixXd& second_polygon){
-    return true;
+bool near1(const MatrixXd& first_polygon, const MatrixXd& second_polygon)
+{
+
+    bool controllo = true;
+    // Bounding box:
+
+    Vector3d max1 = first_polygon.rowwise().maxCoeff();
+    Vector3d min1 = first_polygon.rowwise().minCoeff();
+    Vector3d max2 = second_polygon.rowwise().maxCoeff();
+    Vector3d min2 = second_polygon.rowwise().minCoeff();
+
+    if (min1(0) > max2(0) || min1(1) > max2(1) || min1(2) > max2(2))
+    {
+        controllo = false;
+    }
+    if (min2(0) > max1(0) || min2(1) > max1(1) || min2(2) > max1(2))
+    {
+        controllo = false;
+    }
+
+    return controllo;
+
+
+    // Vector3d max1;
+    // Vector3d max2;
+    // Vector3d min1;
+    // Vector3d min2;
+
+
+    // for (unsigned int i = 0; i < first_polygon.row(0).size(); i++)
+    // {
+    //     double max = first_polygon(i)(0);
+    //     for (unsigned int j = 0; j < first_polygon.col(0).size(); j++)
+    //     {
+    //         if (first_polygon(i)(j) >= max)
+    //         {
+    //             max = first_polygon(i)(j);
+    //             max1(i) = max;
+    //         }
+    //     }
+    // }
+
+    // for (unsigned int i = 0; i < second_polygon.row().size(); i++)
+    // {
+    //     double max = second_polygon(i)(0);
+    //     for (unsigned int j = 0; j < second_polygon.col(0).size(); j++)
+    //     {
+    //         if (second_polygon(i)(j) >= max)
+    //         {
+    //             max = second_polygon(i)(j);
+    //             max2(i) = max;
+    //         }
+    //     }
+    // }
+
+    // for (unsigned int i = 0; i < first_polygon.row().size(); i++)
+    // {
+    //     double min = first_polygon(i)(0);
+    //     for (unsigned int j = 0; j < first_polygon.col(0).size(); j++)
+    //     {
+    //         if (first_polygon(i)(j) <= min)
+    //         {
+    //             min = first_polygon(i)(j);
+    //             min1(i) = min;
+    //         }
+    //     }
+    // }
+
+    // for (unsigned int i = 0; i < second_polygon.row().size(); i++)
+    // {
+    //     double min = second_polygon(i)(0);
+    //     for (unsigned int j = 0; j < second_polygon.col(0).size(); j++)
+    //     {
+    //         if (second_polygon(i)(j) >= min)
+    //         {
+    //             min = second_polygon(i)(j);
+    //             min2(i) = min;
+    //         }
+    //     }
+    // }
+
+
 }
+bool near2(const MatrixXd& first_polygon, const MatrixXd& second_polygon)
 
+{
+    // Calcolo punto medio del primo e del secondo poligono
+    // Calcolo la distanza tra essi e controllo che sia minore di una certa tolleranza
+    // 2 casi:
+    // se è <, allora c'è la possibilità che si intersechino
+    // se è >, allora non si intersecano
 
+    // Vecchio metodo:
+
+    bool controllo = true;
+
+    VectorXd bar_polygon1 = first_polygon.colwise().mean();
+    VectorXd bar_polygon2 = second_polygon.colwise().mean();
+
+    double max_1 = 0.0;
+    for (unsigned int j = 0; j < first_polygon.col(0).size(); j++)
+    {
+        double length1 = bar_polygon1.norm() - first_polygon.col(j).norm();
+        if (length1 > max_1)
+        {
+            max_1 = length1;
+        }
+    }
+
+    double max_2 = 0.0;
+    for (unsigned int j = 0; j < second_polygon.col(0).size(); j++)
+    {
+        double length2 = bar_polygon2.norm() - second_polygon.col(j).norm();
+        if (length2 > max_2)
+        {
+            max_2 = length2;
+        }
+    }
+    double control_length = max_1 + max_2;
+
+    double bar_distance = (bar_polygon1 - bar_polygon2).norm();
+
+    if (bar_distance < control_length)
+    {
+        cout << "Intersection is possible" << endl;
+    }
+    else
+    {
+        controllo = false;
+        cout << "Intersection is impossible" << endl;
+    }
+    return controllo;
+}
 }
