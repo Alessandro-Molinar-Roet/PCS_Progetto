@@ -5,54 +5,75 @@
 namespace FractureNetwork {
 
 //calcola tutte le traccie e se sono passatnti o non passatni e le salva DOVE E COME??????
-void CalculateTraces(const Fractures& fratture, Traces& tracce){
-    unsigned int counter = 0;
-    for(unsigned int i = 0; i<fratture.num; i++){ //ciclo su tutte le matrici (piani)
-        MatrixXd first_polygon = fratture.f_Vertices[i];
-        for(unsigned int j = i+1; j<fratture.num; j++ ){ // controllo tutte le coppie da >i (altre gia cocntrollate precendemente)
-            MatrixXd second_polygon = fratture.f_Vertices[j];
+void CalculateTraces(vector<Fracture>& fratture, vector<Trace>& tracce){
+    unsigned int counter = 0; //tiene il conto tracce trovate (per ID)
+    unsigned int dim = fratture.size(); //numero di fratture
 
-            if(near(first_polygon, second_polygon)){
+    list<Trace> temp_tracce = {}; // lista temporanea per salvare tracce
+    vector<list<unsigned int>>  temp_passing(dim); // posizione i = lista id tracce passanti nel poligono i
+    vector<list<unsigned int>>  temp_not_passing(dim); // posizione i = lista id tracce non passanti nel poligono i
+
+    for(unsigned int i = 0; i<dim; i++){ //ciclo su tutte le matrici (poligoni)
+        MatrixXd first_polygon = fratture[i].vertices;
+        for(unsigned int j = i+1; j<dim; j++ ){ // ciclo su tutti i poligoni >i (altre coppie gia cocntrollate)
+            MatrixXd second_polygon = fratture[j].vertices;
+            if(near1(first_polygon, second_polygon)){ //se molto lontani non controllo nemmeno intersezione
+                //inizializzo variabili utili
                 Vector3d E1 = {};
                 Vector3d E2 = {};
                 bool tips1 = true;
                 bool tips2 = true;
-                bool find = TracciaTraPoligoni(first_polygon, second_polygon, E1, E2,tips1, tips2);
-
+                bool find = TracciaTraPoligoni(first_polygon, second_polygon, E1, E2,tips1, tips2); //calcolo intersezioni
                 if(find){
+                    //Salvo variabili in struttura adeguata
+                    Trace traccia = {};
+
                     Matrix<double,3,2> vertices = {};
                     vertices.col(0) = E1;
                     vertices.col(1) = E2;
-                    tracce.t_Vertices.push_back(vertices);
+                    traccia.vertices = vertices;
+
+                    traccia.ID = counter; //ID della traccia = numero in cui è stata trovata
+                    traccia.first_generator = fratture[i].ID;
+                    traccia.second_generator = fratture[j].ID;
                     double length = sqrt( pow((vertices(0,0)-vertices(0,1)),2) +  pow((vertices(1,0)-vertices(1,1)),2) +  pow((vertices(2,0)-vertices(2,1)),2)); //ATTENZIONE berrone no
-                    tracce.t_length.push_back(length);
-                    tracce.t_ID.push_back(counter); //ID della traccia = numero in cui è stata trovata
+                    traccia.length = length;
 
-                    tracce.t_generator.push_back(fratture.f_ID[i]); // ATTENZIONE come salvo gli ID dei piani che generano uno frattura? posizione = 2i e 2i-1?
-                    tracce.t_generator.push_back(fratture.f_ID[j]);
+                    temp_tracce.push_back(traccia);
 
-                    tracce.Dfn.insert({ i, {{},{}} });
+                    //ATTENZIONE puschback diretto su vettore ridimensionando vettore???
                     if(!tips1){
-                        tracce.Dfn[i][0].push_back(counter);
+                        temp_passing[i].push_back(counter);
                     }
                     else{
-                        tracce.Dfn[i][1].push_back(counter);
+                        temp_not_passing[i].push_back(counter);
                     }
-                    tracce.Dfn.insert({j, {{},{}} });
                     if(!tips2){
-                        tracce.Dfn[j][0].push_back(counter);
+                        temp_passing[j].push_back(counter);
                     }
                     else{
-                        tracce.Dfn[j][1].push_back(counter);
+                        temp_not_passing[j].push_back(counter);
                     }
 
-                    counter ++;
-                    tracce.num = counter;
-                    }
+                    counter ++;  
                 }
             }
         }
     }
+
+    //ATTENZIONE Vicini resize più sicuro ma si rompe con resize
+    //ATTENZIONE serve sapere cosa fa move?
+    tracce.reserve(size(temp_tracce));
+    move(begin(temp_tracce), end(temp_tracce), back_inserter(tracce));
+
+    for(unsigned int i = 0; i<dim; i++){
+        fratture[i].passing.reserve(temp_passing[i].size());
+        move(begin(temp_passing[i]), end(temp_passing[i]), back_inserter(fratture[i].passing));
+        fratture[i].not_passing.reserve(temp_not_passing[i].size());
+        move(begin(temp_not_passing[i]), end(temp_not_passing[i]), back_inserter(fratture[i].not_passing));
+
+    }
+}
 
 //***************************************************************************************************************
 Vector3d normaleP(const MatrixXd& frattura)
@@ -63,6 +84,26 @@ Vector3d normaleP(const MatrixXd& frattura)
 }
 
 //***************************************************************************************************************
+bool intersRettaPoly(const MatrixXd& frattura, const Vector3d& puntoRetta,const Vector3d& direzione,vector<Vector3d>& intersezioni)
+{
+
+    for(unsigned int i=0;i<frattura.cols();i++){
+        //intersezione lato-retta
+        Vector3d puntoipoly = frattura.col(i);
+        Vector3d latoipoly =frattura.col((i+1)%frattura.cols())-frattura.col(i);
+        double t = ((puntoRetta.cross(direzione)).dot((latoipoly.cross(direzione)))-(puntoipoly.cross(direzione)).dot((latoipoly.cross(direzione))))/pow((latoipoly.cross(direzione)).norm(), 2);
+        if (t >= 0.0 && t <= 1.0)
+        {
+            intersezioni.push_back(puntoipoly + t * latoipoly);
+        }
+        if(intersezioni.size()==2){
+            return true;
+        }
+    }
+    return false;
+}
+
+//***************************************************************************************************************
 bool TracciaTraPoligoni(const MatrixXd& frattura1,const MatrixXd& frattura2, Vector3d& E1, Vector3d& E2, bool& tips1, bool& tips2)
 {
     //Considero la retta di intersezione tra i due piani che contengono i poligoni
@@ -70,7 +111,7 @@ bool TracciaTraPoligoni(const MatrixXd& frattura1,const MatrixXd& frattura2, Vec
     Vector3d n1 = normaleP(frattura1);
     Vector3d n2 = normaleP(frattura2);
     Vector3d direzione = n1.cross(n2).normalized();
-    //Se il prodotto vettoriale è nullo, i piani parallele
+    //Se il prodotto vettoriale è nullo, i piani sono paralleli
     if(abs(direzione.norm()) < 0.00001){ //abs<tol
         return false;
     }
@@ -89,47 +130,23 @@ bool TracciaTraPoligoni(const MatrixXd& frattura1,const MatrixXd& frattura2, Vec
     //Ora controlliamo se il poligono interseca la retta
 
     vector<Vector3d> intersezioni;
-    for(unsigned int i=0;i<frattura1.cols();i++){
-        //Nel momento in cui trovo due intersezioni, non mi serve controllare i lati rimanenti
-        if(intersezioni.size()==2)
-        {
-            break;
-        }
-        //intersezione lato-retta
-        Vector3d puntoipoly1 = frattura1.col(i);
-        Vector3d latoipoly1 =frattura1.col((i+1)%frattura1.cols())-frattura1.col(i);
-        double t = ((puntoRetta.cross(direzione)).dot((latoipoly1.cross(direzione)))-(puntoipoly1.cross(direzione)).dot((latoipoly1.cross(direzione))))/pow((latoipoly1.cross(direzione)).norm(), 2);
-        if (t >= 0.0 && t <= 1.0)
-        {
-            intersezioni.push_back(puntoipoly1 + t * latoipoly1);
-        }
+    intersezioni.reserve(4);
+    vector<Vector3d> inter1;
+    if(intersRettaPoly(frattura1,puntoRetta,direzione,inter1)){
+        intersezioni.push_back(inter1[0]);
+        intersezioni.push_back(inter1[1]);
     }
-    //Se il primo poligono non ha intersezioni con la retta, non serve controllare il secondo poligono
-    if (intersezioni.size() < 2)
-    {
+    else{
         return false;
     }
-
-    for(unsigned int i=0;i<frattura2.cols();i++){
-        if(intersezioni.size()==4)
-        {
-            break;
-        }
-
-        Vector3d puntoipoly2 = frattura2.col(i);
-        Vector3d latoipoly2 =frattura2.col((i+1)%frattura2.cols())-frattura2.col(i);
-        double t = ((puntoRetta.cross(direzione)).dot((latoipoly2.cross(direzione)))-(puntoipoly2.cross(direzione)).dot((latoipoly2.cross(direzione))))/pow((latoipoly2.cross(direzione)).norm(), 2);
-        if (t >= 0.0 && t <= 1.0)
-        {
-            intersezioni.push_back(puntoipoly2 + t * latoipoly2);
-        }
-
+    vector<Vector3d> inter2;
+    if(intersRettaPoly(frattura2,puntoRetta,direzione,inter2)){
+        intersezioni.push_back(inter2[0]);
+        intersezioni.push_back(inter2[1]);
     }
-    if (intersezioni.size() < 4)
-    {
+    else{
         return false;
     }
-
     //Identifico i 4 punti trovati sulla retta
     double a = ((intersezioni[0]-puntoRetta).dot(direzione))/(direzione.norm()*direzione.norm());
     double b = ((intersezioni[1]-puntoRetta).dot(direzione))/(direzione.norm()*direzione.norm());
@@ -204,30 +221,72 @@ bool TracciaTraPoligoni(const MatrixXd& frattura1,const MatrixXd& frattura2, Vec
         }
         return true;
     }
-
-    cout << "problem" << endl;
     return false;
 }
 
 
 //***************************************************************************************************************
-bool near(const MatrixXd& first_polygon, const MatrixXd& second_polygon){
-    return true;
+// Bounding box:
+bool near1(const MatrixXd& first_polygon, const MatrixXd& second_polygon)
+{
+    bool controllo = true;
+
+    Vector3d max1 = first_polygon.rowwise().maxCoeff();
+    Vector3d min1 = first_polygon.rowwise().minCoeff();
+    Vector3d max2 = second_polygon.rowwise().maxCoeff();
+    Vector3d min2 = second_polygon.rowwise().minCoeff();
+
+    if (min1(0) > max2(0) || min1(1) > max2(1) || min1(2) > max2(2))
+    {
+        controllo = false;
+    }
+    if (min2(0) > max1(0) || min2(1) > max1(1) || min2(2) > max1(2))
+    {
+        controllo = false;
+    }
+
+    return controllo;
 }
 
+//***************************************************************************************************************
+// Calcolo punto medio del primo e del secondo poligono
+// Calcolo la distanza tra essi e controllo che sia minore di una certa tolleranza
+// 2 casi:
+// se è <, allora c'è la possibilità che si intersechino
+// se è >, allora non si intersecano
+bool near2(const MatrixXd& first_polygon, const MatrixXd& second_polygon){
+    bool controllo = true;
+    VectorXd bar_polygon1 = first_polygon.colwise().mean();
+    VectorXd bar_polygon2 = second_polygon.colwise().mean();
 
+    double max_1 = 0.0;
+    for (unsigned int j = 0; j < first_polygon.col(0).size(); j++){
+        double length1 = bar_polygon1.norm() - first_polygon.col(j).norm();
+        if (length1 > max_1){
+            max_1 = length1;
+        }
+    }
 
+    double max_2 = 0.0;
+    for (unsigned int j = 0; j < second_polygon.col(0).size(); j++){
+        double length2 = bar_polygon2.norm() - second_polygon.col(j).norm();
+        if (length2 > max_2){
+            max_2 = length2;
+        }
+    }
 
+    double control_length = max_1 + max_2;
+    double bar_distance = (bar_polygon1 - bar_polygon2).norm();
 
-
-
-
-
-
-
-
-
-
+    if (bar_distance < control_length){
+        cout << "Intersection is possible" << endl;
+    }
+    else{
+        controllo = false;
+        cout << "Intersection is impossible" << endl;
+    }
+    return controllo;
+}
 
 
 
@@ -251,7 +310,5 @@ unsigned int IsInside(const MatrixXd& polygon, Vector3d normal, Vector3d point){
     return counter; //interno
 }
 
-
-
-
 }
+
