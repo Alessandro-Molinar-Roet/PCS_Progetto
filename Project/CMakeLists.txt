@@ -74,8 +74,6 @@ target_compile_options(${CMAKE_PROJECT_NAME} PUBLIC -fPIC)
 
 # Test executable
 add_executable(${CMAKE_PROJECT_NAME}_TEST main_test.cpp
-    ${${CMAKE_PROJECT_NAME}_sources}
-    ${${CMAKE_PROJECT_NAME}_headers}
     ${${CMAKE_PROJECT_NAME}_TEST_sources}
     ${${CMAKE_PROJECT_NAME}_TEST_headers})
 
@@ -86,8 +84,6 @@ target_compile_options(${CMAKE_PROJECT_NAME}_TEST PUBLIC -fPIC)
 
 # Paraview #devo aggiungeretutto o pasata solo parte??
 add_executable(${CMAKE_PROJECT_NAME}_PARAVIEW main_paraview.cpp
-    ${${CMAKE_PROJECT_NAME}_sources}
-    ${${CMAKE_PROJECT_NAME}_headers}
     ${${CMAKE_PROJECT_NAME}_PARAVIEW_sources}
     ${${CMAKE_PROJECT_NAME}_PARAVIEW_headers})
 
