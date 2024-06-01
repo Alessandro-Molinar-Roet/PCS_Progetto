@@ -1,6 +1,7 @@
 #pragma once
 
 #include"FracturesNetworkLibrary.hpp"
+#include"tol.hpp"
 
 namespace FractureNetwork{
 
@@ -23,7 +24,7 @@ bool TracciaTraPoligoni(const MatrixXd& frattura1,const MatrixXd& frattura2, Vec
 // Prende una fratuttra e una retta e ne calcola l'intersezione
 bool intersRettaPoly(const MatrixXd& frattura, const Vector3d& puntoRetta,const Vector3d& direzione,vector<Vector3d>& intersezioni);
 
-
+Vector3d applyThreshold(const Vector3d& vec);
 
 
 

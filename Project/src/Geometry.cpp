@@ -1,5 +1,6 @@
 #include "Geometry.hpp"
 #include "math.h"
+#include "tol.hpp"
 #include <iostream>
 
 namespace FractureNetwork {
@@ -104,6 +105,17 @@ bool intersRettaPoly(const MatrixXd& frattura, const Vector3d& puntoRetta,const 
 }
 
 //***************************************************************************************************************
+Vector3d applyThreshold(const Vector3d& vec) {
+    Vector3d result = vec; // Create a copy of the input vector
+    for (int i = 0; i < result.size(); i++) {
+        if (std::abs(result[i]) < tol) {
+            result[i] = 0.0;
+        }
+    }
+    return result;
+}
+
+//***************************************************************************************************************
 bool TracciaTraPoligoni(const MatrixXd& frattura1,const MatrixXd& frattura2, Vector3d& E1, Vector3d& E2, bool& tips1, bool& tips2)
 {
     //Considero la retta di intersezione tra i due piani che contengono i poligoni
@@ -112,14 +124,14 @@ bool TracciaTraPoligoni(const MatrixXd& frattura1,const MatrixXd& frattura2, Vec
     Vector3d n2 = normaleP(frattura2);
     Vector3d direzione = n1.cross(n2).normalized();
     //Se il prodotto vettoriale è nullo, i piani sono paralleli
-    if(abs(direzione.norm()) < 0.00001){ //abs<tol
+    if(abs(direzione.norm()) < tol){ //abs<tol
         return false;
     }
     //Interseco il piano del poligono 1 con la retta che contiene il lato 1 del poligono 2 per trovare un punto della retta
     Vector3d lato = frattura2.col(1)-frattura2.col(0);
     Vector3d punto = frattura2.col(0);
     //Controllo che quel lato non sia parallelo al piano, e se lo è, prendo il lato successivo
-    if(lato.dot(n1)==0)
+    if(abs(lato.dot(n1))<tol)
     {
         lato = frattura2.col(2)-frattura2.col(1);
         punto = frattura2.col(1);
@@ -133,16 +145,16 @@ bool TracciaTraPoligoni(const MatrixXd& frattura1,const MatrixXd& frattura2, Vec
     intersezioni.reserve(4);
     vector<Vector3d> inter1;
     if(intersRettaPoly(frattura1,puntoRetta,direzione,inter1)){
-        intersezioni.push_back(inter1[0]);
-        intersezioni.push_back(inter1[1]);
+        intersezioni.push_back(applyThreshold(inter1[0]));
+        intersezioni.push_back(applyThreshold(inter1[1]));
     }
     else{
         return false;
     }
     vector<Vector3d> inter2;
     if(intersRettaPoly(frattura2,puntoRetta,direzione,inter2)){
-        intersezioni.push_back(inter2[0]);
-        intersezioni.push_back(inter2[1]);
+        intersezioni.push_back(applyThreshold(inter2[0]));
+        intersezioni.push_back(applyThreshold(inter2[1]));
     }
     else{
         return false;
@@ -203,7 +215,7 @@ bool TracciaTraPoligoni(const MatrixXd& frattura1,const MatrixXd& frattura2, Vec
         E2 = intersezioni[3];
         tips2 = false;
         tips1 = true;
-        if(a==c && d == b)
+        if(abs(a-c)<tol && abs(d-b)<tol)
         {
             tips1 = false;
         }
@@ -215,7 +227,7 @@ bool TracciaTraPoligoni(const MatrixXd& frattura1,const MatrixXd& frattura2, Vec
         E2 = intersezioni[1];
         tips1 = false;
         tips2 = true;
-        if(a==c && d == b)
+        if(abs(a-c)<tol && abs(d-b)<tol)
         {
             tips2 = false;
         }
@@ -299,7 +311,7 @@ unsigned int IsInside(const MatrixXd& polygon, Vector3d normal, Vector3d point){
         Vector3d lato = polygon.col((i + 1) % polygon.row(0).size()) - polygon.col(i); // vertice[i]-vertice[i+1]
         Vector3d toPoint = point - polygon.col(i); // punto-vertice
         double prodotto_misto = normal.dot(lato.cross(toPoint)); //prodotto misto normale*(lato x toPoint)
-        if (lato.cross(toPoint).isZero(0.000001)){ // ATTENZIONE Tolleranza se no si rompe dove la definsico?????
+        if (lato.cross(toPoint).norm()<tol){ // ATTENZIONE Tolleranza se no si rompe dove la definsico?????
             counter = 2; // sul bordo
         }
         if (prodotto_misto < 0) {

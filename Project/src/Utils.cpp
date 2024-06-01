@@ -3,6 +3,7 @@
 #include<iostream>
 #include"Utils.hpp"
 #include"math.h"
+#include<iomanip>
 
 using namespace std;
 namespace FractureNetwork {
@@ -36,7 +37,7 @@ bool ImportFractures(const string& filepath, vector<Fracture>& fratture){
 
         if((counter>=3) && (counter<=5)){ //linee di coordinate vertici (e1; e2; e3; e4; ...)
             for(unsigned int i = 0; i<num_vertices; i++){
-                converter >> fratture[matrix_counter].vertices(counter-3,i) >> temp;
+                converter >> setprecision(12)>>fratture[matrix_counter].vertices(counter-3,i) >> temp;
             }
         }
         if(counter == 6){ //linea intestazione (sommo subito dopo quindi counter = 1)
@@ -96,7 +97,7 @@ bool PrintTrace(const string& filepath, const vector<Trace>& tracce){
         myfile << "# TraceId; FractureId1; FractureId2; X1; Y1; Z1; X2; Y2; Z2" << endl;
         myfile << tracce[i].ID << "; "
                << tracce[i].first_generator << "; " << tracce[i].second_generator << "; "
-               << tracce[i].vertices(0,0) << "; " << tracce[i].vertices(1,0) << "; " << tracce[i].vertices(2,0) << "; "
+               <<fixed<<setprecision(12)<< tracce[i].vertices(0,0) << "; " << tracce[i].vertices(1,0) << "; " << tracce[i].vertices(2,0) << "; "
                << tracce[i].vertices(0,1) << "; " << tracce[i].vertices(1,1) << "; " << tracce[i].vertices(2,1) << endl;
     }
     myfile.close();

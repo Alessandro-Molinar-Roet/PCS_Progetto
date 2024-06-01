@@ -3,6 +3,7 @@
 #include "Utils.hpp"
 #include "Geometry.hpp"
 #include <iostream>
+#include<iomanip>
 
 using namespace std;
 using namespace FractureNetwork;
@@ -19,15 +20,15 @@ int main()
         return 1;
     }
 
-    /*
+
     //CHECK:
     // Stampa il contenuto del vettore di fratture
     cout << fratture.size() << endl;
     cout << "Contenuto del vettore di fratture:\n";
     for (const auto& f : fratture) {
-        cout << fixed << f.vertices << endl << endl;
+        cout << fixed << setprecision(12) << f.vertices << endl << endl;
     }
-    */
+
 
     CalculateTraces(fratture,tracce);
 
@@ -67,6 +68,7 @@ int main()
     string traceFile = "tracce.txt";
     bool printed = PrintTrace(traceFile, tracce);
     if(!printed){
+        cout << "Cringe" << endl;
         return 1;
     }
     string tracceFile2 = "fratture_tracce.txt";
