@@ -3,13 +3,23 @@
 #include "Utils.hpp"
 #include "Geometry.hpp"
 #include <iostream>
-#include<iomanip>
+#include <iomanip>
 
 using namespace std;
 using namespace FractureNetwork;
 
 int main()
 {
+    double a = 1+10e-10;
+    double b = 0.0001*std::numeric_limits<double>::epsilon();
+    double c = 1+10e-16;
+    Vector3d vect = {a,b,c};
+    cout<<"Vector"<<vect<<endl;
+    cout<<"Vector rivisto:"<<applyThreshold(vect)<<endl;
+    if(c<a){
+        cout<<"c<a è vero"<<endl;
+    }
+
     string filepath = "DFN_files/FR3_data.txt";
     vector<Fracture> fratture;
     vector<Trace> tracce;
