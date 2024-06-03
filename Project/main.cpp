@@ -21,6 +21,7 @@ int main()
     }
 
     string filepath = "DFN_files/FR3_data.txt";
+
     vector<Fracture> fratture;
     vector<Trace> tracce;
 
@@ -90,6 +91,11 @@ int main()
     //     //PUNTO 2:
     //     //
     //     //
+    Mesh mesh;
+    cutting(fratture,tracce);
+
+
+
 
 
     cout << "okay" << endl;

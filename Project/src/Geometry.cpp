@@ -2,6 +2,8 @@
 #include "math.h"
 #include "tol.hpp"
 #include <iostream>
+#include<iomanip>
+#include<tol.hpp>
 
 namespace FractureNetwork {
 
@@ -233,7 +235,6 @@ bool fracturesIntersection(const MatrixXd& fracture1,const MatrixXd& fracture2, 
     return false;
 }
 
-
 //***************************************************************************************************************
 // Bounding box:
 bool near1(const MatrixXd& fracture1, const MatrixXd& fracture2)
@@ -298,9 +299,25 @@ bool near2(const MatrixXd& fracture1, const MatrixXd& fracture2){
 }
 
 
+//***************************************************************************************************************
+bool IsInside(const MatrixXd& polygon, Vector3d point){
+    Vector3d point1 = polygon.col(0);
+    Vector3d point2 = polygon.col(1);
+    Vector3d N = (point-point1).cross(point-point2);
 
+    for (unsigned int i = 0; i < polygon.cols(); i++) { // cicla su tutti i lati di un poligono (colonne matrice)
+        Vector3d pi = polygon.col(i);
+        Vector3d ps = polygon.col((i + 1) % polygon.cols());
+        double prodotto_misto = (point-pi).cross(point-ps).dot(N); //prodotto misto normale*(lato x toPoint) //ATTENZIONE megliodot product o sequenza if?
+        if(prodotto_misto < 0){
+            return false; //esterno
+        }
+    }
+    return true; //interno
+}
 
 //***************************************************************************************************************
+
 //Serve per punto 2?
 unsigned int IsInside(const MatrixXd& fracture, Vector3d normal, Vector3d point){
     unsigned int counter = 1; //ATTENZIONE essite bolean a 3?
@@ -314,10 +331,152 @@ unsigned int IsInside(const MatrixXd& fracture, Vector3d normal, Vector3d point)
         if (tripleProduct < 0) {
             counter = 0; // fuori
             return counter;
+
+vector<unsigned int> intersect(const MatrixXd& frattura, const Vector3d& puntoRetta,const Vector3d& direzione,vector<Vector3d>& intersezioni){
+    vector<unsigned int> lato;
+    unsigned int counter = 1;
+
+    for(unsigned int i= 0; i<frattura.cols();i++){
+        Vector3d puntoipoly = frattura.col(i);
+        Vector3d latoipoly =frattura.col((i+1) % frattura.cols())-frattura.col(i);
+
+        if(!(latoipoly.cross(direzione)).isZero(0)){
+            double t = ((puntoRetta.cross(direzione)).dot((latoipoly.cross(direzione)))-(puntoipoly.cross(direzione)).dot((latoipoly.cross(direzione))))/(latoipoly.cross(direzione).norm()*latoipoly.cross(direzione).norm());
+            if ( (t > (0)) && (t < (1.0)) ){
+                intersezioni.push_back(puntoipoly + t * latoipoly);
+                lato.push_back(counter);
+            }
+        }
+        else{
+            /*
+            cout << "paralelli" << endl;
+            cout << "controllo libro" << endl;
+            */
+        }
+        if(intersezioni.size() == 2 ){
+            return lato;
+        }
+        counter++; //spostare counter
+    }
+
+    cout << "error: " << intersezioni.size() << "\n" << frattura.transpose() << "\n" << direzione <<"\n" << puntoRetta <<  endl;
+    return lato;
+}
+
+
+void split(const MatrixXd& polygon, const vector<unsigned int>& all, const vector<Trace>& tracce, unsigned int counter, list<MatrixXd>& cutted ){
+    //inizializzazione variabili
+    unsigned int current;
+    Vector3d point1 = {};
+    Vector3d point2 = {};
+    Vector3d direzione = {};
+    bool full1 = false;
+    bool full2 = false;
+
+    if(counter < all.size()){
+        current = all[counter]; // ID traccia tagliante
+        point1 = tracce[current].vertices.col(0); // estremo 1
+        point2 = tracce[current].vertices.col(1); // estremo 2
+        direzione = point2-point1; // direzione dell traccia
+
+        full1 = IsInside(polygon,point1); // true se la frattura contiene l'estremo uno della traccia
+        full2 = IsInside(polygon,point2); // true se la frattura contiene l'estremo due della traccia
+    }
+
+    if( !full1 && !full2){
+        cutted.push_back(polygon);
+        // extractinfo(polygon, mesh);
+    }
+    else{
+        counter++;
+        unsigned int dim = polygon.cols();
+        MatrixXd temp_sx(3,dim+2);
+        MatrixXd temp_dx(3,dim+2);
+        vector<Vector3d> intersezioni;
+        vector<unsigned int> lati = intersect(polygon, point1, direzione, intersezioni);
+
+        bool change = false;
+        unsigned int counter1 = 0;
+        unsigned int counter2 = 0;
+        if(lati[0] != lati[1]){
+            for(unsigned int i = 0; i< dim ; i++ ){
+                if(!change){
+                    temp_sx.col(counter1) = polygon.col(i);
+                    counter1 ++;
+                }
+                if(change){
+                    temp_dx.col(counter2) = polygon.col(i);
+                    counter2 ++;
+                }
+                if( (lati[0]-1) == i){
+                    if(intersezioni[0]!=polygon.col(i)){
+                        temp_sx.col(counter1) = intersezioni[0];
+                        counter1++;
+                    }
+                    change = true;
+                }
+                if((lati[1]-1) == i){
+                    if(intersezioni[1]!=polygon.col(i)){
+                        temp_sx.col(counter1) = intersezioni[1];
+                        counter1 ++;
+
+                        temp_dx.col(counter2) = intersezioni[1];
+                        counter2 ++;
+                        temp_dx.col(counter2) = intersezioni[0];
+                        counter2 ++;
+                    }
+                    change = false;
+                }
+            }
+
+            // estraggo sotto matrice riempita
+            MatrixXd sx = temp_sx.leftCols(counter1);
+            MatrixXd dx = temp_dx.leftCols(counter2);
+
+            // chiamate ricorsive
+            split(sx, all, tracce, counter, cutted);
+            split(dx, all, tracce, counter, cutted);
+        }
+        else{ // caso a libro non effettuo tagli passo a frattura successiva
+            // chiamata ricorsive
+            cout << "intersezione a libro" << endl;
+            split(polygon,all,tracce,counter,cutted);
         }
     }
-    return counter; //interno
 }
+
+void cutting(vector<Fracture>& fratture, vector<Trace>& tracce){
+    list<MatrixXd> cutted = {};  // lista con le fratture tagliate (ogni matrice ha i vertici di un taglio)
+    Mesh mesh = {};
+    // Ciclo su tutte le fratture
+    for(unsigned int i = 0; i<fratture.size(); i++){
+        MatrixXd polygon = fratture[i].vertices; // vertici frattura
+        // Se ce ne sono faccio il cut per le passanti
+        vector<unsigned int> passing = fratture[i].passing; // vettore id traccie passanti
+        vector<unsigned int> not_passing = fratture[i].not_passing;
+
+        vector<unsigned int> all;
+        all.reserve(passing.size() + not_passing.size());
+        all.insert(all.end(), passing.begin(), passing.end());
+        all.insert(all.end(), not_passing.begin(), not_passing.end());
+
+        if(!all.empty()){
+            unsigned int counter = 0;
+            split(polygon, all , tracce, counter, cutted); // funzione ricorsiva taglio finchè posso
+        }
+    }
+
+    for (auto const& i : cutted){
+        cout << i << endl << endl;
+    }
+
+    cout << cutted.size() << endl;
+    cout << tracce.size() << endl;
+}
+
+
+
+
 
 }
 

@@ -1,3 +1,3 @@
 #include "tol.hpp"
 
-const double tol = 1000*std::numeric_limits<double>::epsilon();
+const double tol = 0.00000000001;
