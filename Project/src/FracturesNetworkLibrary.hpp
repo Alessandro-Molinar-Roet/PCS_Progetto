@@ -42,4 +42,26 @@ struct Trace{
 };
 
 
+struct Mesh
+{
+    // Struttura per salvare mesh generata dai tagli delle fratture
+    // Celle0D = punti (numero, ID, coordinate)
+    // Cell01D = lati (numero, ID, ID estremi lato)
+    // Celle2D = aree (numero, ID, ID vertici, ID lati)
+
+    unsigned int NumberCell0D = 0;
+    vector<unsigned int> Cell0DId = {};
+    vector<Vector2d> Cell0DCoordinates = {};
+
+    unsigned int NumberCell1D = 0;
+    vector<unsigned int> Cell1DId = {};
+    vector<Vector2i> Cell1DVertices = {};
+
+    unsigned int NumberCell2D = 0;
+    vector<unsigned int> Cell2DId = {};
+    vector<vector<unsigned int>> Cell2DVertices = {};
+    vector<vector<unsigned int>> Cell2DEdges = {};
+};
+
+
 }

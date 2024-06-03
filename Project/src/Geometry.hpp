@@ -24,26 +24,21 @@ bool TracciaTraPoligoni(const MatrixXd& frattura1,const MatrixXd& frattura2, Vec
 bool intersRettaPoly(const MatrixXd& frattura, const Vector3d& puntoRetta,const Vector3d& direzione,vector<Vector3d>& intersezioni);
 
 
+//******************************************************************************************************************************
+//Parte due
 
+void cutting(vector<Fracture>& fratture, vector<Trace>& tracce);
 
+void split(const MatrixXd& polygon, const vector<unsigned int>& passing, const vector<Trace>& tracce, unsigned int counter, list<MatrixXd>& cutted );
 
+vector<unsigned int> intersect(const MatrixXd& frattura, const Vector3d& puntoRetta,const Vector3d& direzione,vector<Vector3d>& intersezioni);
 
-
-
-
-
-
-
-
-
-
-
-
+void extractinfo(const MatrixXd& polygon, Mesh& mesh);
 
 
 // Serve Per punto due ?
 // trova la posizione relativa di un punto e un poligono che giacciono sullo stesso piano ( 0 se all'esterno, 1 all'intenro, 2 sulla frontiera)
-unsigned int IsInside(const MatrixXd& polygon, Vector3d normal, Vector3d point);
+bool IsInside(const MatrixXd& polygon, Vector3d point);
 
 
 }
