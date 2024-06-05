@@ -35,7 +35,7 @@ void split(const MatrixXd& polygon, const vector<unsigned int>& passing, const v
 
 vector<unsigned int> intersect(const MatrixXd& frattura, const Vector3d& puntoRetta,const Vector3d& direzione,vector<Vector3d>& intersezioni);
 
-void extractinfo(const MatrixXd& polygon, Mesh& mesh);
+void extractinfo(const MatrixXd& polygon, Mesh& mesh, const unsigned int& counter);
 
 // Serve Per punto due ?
 // trova la posizione relativa di un punto e un poligono che giacciono sullo stesso piano ( 0 se all'esterno, 1 all'intenro, 2 sulla frontiera)

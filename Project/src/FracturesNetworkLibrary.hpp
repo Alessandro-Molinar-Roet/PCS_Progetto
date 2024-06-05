@@ -17,7 +17,6 @@ struct Fracture{
     // passing = vettore di id tracce passanti
     // not_passing = vettore di id tracce non passanti
 
-    unsigned int num = 0;
     unsigned int ID = {};
     MatrixXd vertices {}; // ATTENZIONE arrotonda numeri //ATTENZIONE 3xn
 
