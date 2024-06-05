@@ -51,8 +51,7 @@ bool ImportFractures(const string& filepath, vector<Fracture>& fractures){
 
 //********************************************************************************
 void SortingFractureTraces(vector<Fracture>& fractures, vector<Trace>& traces){
-    for (unsigned int i = 0; i<fractures.size(); i++)
-    {
+    for (unsigned int i = 0; i<fractures.size(); i++){
         if(!fractures[i].passing.empty()){
             unsigned int num = size(fractures[i].passing);
             vector<pair<unsigned int,double>> temp(num);
