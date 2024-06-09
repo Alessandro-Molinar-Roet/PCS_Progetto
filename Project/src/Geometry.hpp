@@ -22,7 +22,7 @@ Vector3d normalP(const MatrixXd& fracture);
 bool fracturesIntersection(const MatrixXd& fracture1,const MatrixXd& fracture2, Vector3d& E1, Vector3d& E2, bool& tips1, bool& tips2);
 
 // Prende una fratuttra e una retta e ne calcola l'intersezione
-bool lineFractIntersect(const MatrixXd& fracture, const Vector3d& pointOnLine,const Vector3d& direction,vector<Vector3d>& intersections);
+bool lineFractIntersect(const MatrixXd& fracture, const Vector3d& pointOnLine,const Vector3d& direction, vector<Vector3d>& intersections);
 
 Vector3d applyThreshold(const Vector3d& vec);
 
@@ -31,14 +31,10 @@ Vector3d applyThreshold(const Vector3d& vec);
 
 void cutting(vector<Fracture>& fratture, vector<Trace>& tracce);
 
-void split(const MatrixXd& polygon, const vector<unsigned int>& passing, const vector<Trace>& tracce, unsigned int counter, list<MatrixXd>& cutted );
+void split(const MatrixXd& polygon, const vector<unsigned int>& passing, const vector<Trace>& tracce, unsigned int counter, list<MatrixXd>& cutted);
 
-vector<unsigned int> intersect(const MatrixXd& frattura, const Vector3d& puntoRetta,const Vector3d& direzione,vector<Vector3d>& intersezioni);
+bool IsInside(const MatrixXd& frattura, const Vector3d& tr1, const Vector3d& direzione, vector<Vector3d>& intersezioni, vector<unsigned int>& lato);
 
 void extractinfo(const MatrixXd& polygon, Mesh& mesh, const unsigned int& counter);
-
-// Serve Per punto due ?
-// trova la posizione relativa di un punto e un poligono che giacciono sullo stesso piano ( 0 se all'esterno, 1 all'intenro, 2 sulla frontiera)
-bool IsInside(const MatrixXd& polygon, Vector3d point);
 
 }

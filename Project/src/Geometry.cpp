@@ -296,30 +296,12 @@ bool near2(const MatrixXd& fracture1, const MatrixXd& fracture2){
 
 
 
-
+//PARTE 2
 //***************************************************************************************************************
-//ERRORE??????
-bool IsInside(const MatrixXd& polygon, Vector3d point){
-    Vector3d point1 = polygon.col(0);
-    Vector3d point2 = polygon.col(1);
-    Vector3d N = (point-point1).cross(point-point2);
-
-    for (unsigned int i = 1; i < polygon.cols(); i++) { // cicla su tutti i lati di un poligono (colonne matrice)
-        Vector3d pi = polygon.col(i);
-        Vector3d ps = polygon.col((i + 1) % polygon.cols());
-        double prodotto_misto = (point-pi).cross(point-ps).dot(N); //prodotto misto normale*(lato x toPoint) //ATTENZIONE megliodot product o sequenza if?
-        if(prodotto_misto < -tol){
-            return false; //esterno
-        }
-    }
-    return true; //interno
-}
-
-
-//***************************************************************************************************************
-vector<unsigned int> intersect(const MatrixXd& frattura, const Vector3d& puntoRetta,const Vector3d& direzione,vector<Vector3d>& intersezioni){
-    vector<unsigned int> lato;
+bool IsInside(const MatrixXd& frattura, const Vector3d& puntoRetta,const Vector3d& direzione,vector<Vector3d>& intersezioni, vector<unsigned int>& lato){
     unsigned int counter = 1;
+    unsigned int meet1 = 0;
+    unsigned int meet2 = 0;
 
     for(unsigned int i= 0; i<frattura.cols();i++){
         Vector3d puntoipoly = frattura.col(i);
@@ -327,36 +309,45 @@ vector<unsigned int> intersect(const MatrixXd& frattura, const Vector3d& puntoRe
 
         if(!(latoipoly.cross(direzione)).isZero(tol)){
             double t = ((puntoRetta.cross(direzione)).dot((latoipoly.cross(direzione)))-(puntoipoly.cross(direzione)).dot((latoipoly.cross(direzione))))/(latoipoly.cross(direzione).norm()*latoipoly.cross(direzione).norm());
+
             if ( (t > (-tol)) && (t < (1.0+tol)) ){
                 intersezioni.push_back(puntoipoly + t * latoipoly);
                 lato.push_back(counter);
+
+                double k = (puntoipoly + t*latoipoly -puntoRetta).dot(direzione)/(direzione.norm()*direzione.norm());
+                if(k > tol){
+                    meet1++;
+                    if(k<1.0+tol){
+                        meet2++;
+                    }
+                }
             }
         }
         else{
-            cout << "paralelli" << endl; //ATTENZIONE manca controllo a libro
+            if((puntoipoly-puntoRetta).cross(direzione).isZero(tol)){
+                //ATTENZIONE CONTROLLO COMPRESO
+                cout << "fakes" << endl;
+                lato.push_back(counter);
+            }
         }
-        if(intersezioni.size() == 2 ){
-            return lato;
-        }
-        counter++; //spostare counter
+        counter++; //passo al lato successivo
     }
-
-    // cout << "error: " << intersezioni.size() << "\n\n" << frattura.transpose() << "\n\n" << direzione <<"\n\n" << puntoRetta <<  endl;
-    // cout << endl << endl;
-    lato.push_back(0);
-    lato.push_back(0);
-    return lato;
+    if(meet1 == 1 || meet2 == 1){
+        return true;
+    }
+    return false;
 }
 
-
-void split(const MatrixXd& polygon, const vector<unsigned int>& all, const vector<Trace>& tracce, unsigned int counter, list<MatrixXd>& cutted ){
+void split(const MatrixXd& polygon, const vector<unsigned int>& all, const vector<Trace>& tracce, unsigned int counter, list<MatrixXd>& cutted){
     //inizializzazione variabili
     unsigned int current;
     Vector3d point1 = {};
     Vector3d point2 = {};
     Vector3d direzione = {};
-    bool full1 = false;
-    bool full2 = false;
+    bool full = false;
+
+    vector<Vector3d> intersezioni = {};
+    vector<unsigned int> lati = {};
 
     if(counter < all.size()){
         current = all[counter]; // ID traccia tagliante
@@ -364,70 +355,68 @@ void split(const MatrixXd& polygon, const vector<unsigned int>& all, const vecto
         point2 = tracce[current].vertices.col(1); // estremo 2
         direzione = point2-point1; // direzione dell traccia
 
-        full1 = IsInside(polygon,point1); // true se la frattura contiene l'estremo uno della traccia
-        full2 = IsInside(polygon,point2); // true se la frattura contiene l'estremo due della traccia
-    }
-    if( !full1 && !full2){
-        cout << counter << endl;
-        cutted.push_back(polygon);
-        // extractinfo(polygon, mesh);
-    }
-    else{
-        counter++;
-        vector<Vector3d> intersezioni;
-        vector<unsigned int> lati = intersect(polygon, point1, direzione, intersezioni);
+        full = IsInside(polygon,point1,direzione,intersezioni,lati); // true se la frattura contiene l'estremo uno della traccia
 
-        if(lati[0] == lati[1]){ // se sono sullo stesso lato frattura non taglia (es: intersezioni a libro)
-            // chiamata ricorsive
+        counter++;
+        if( !full || lati[0] == lati[1]){
             split(polygon,all,tracce,counter,cutted);
         }
         else{
-            unsigned int dim = polygon.cols();
-            MatrixXd temp_sx(3,dim+2);
-            MatrixXd temp_dx(3,dim+2);
-
-            bool change = false;
-            unsigned int counter1 = 0;
-            unsigned int counter2 = 0;
-
-            for(unsigned int i = 0; i< dim ; i++ ){
-                if(!change){
-                    temp_sx.col(counter1) = polygon.col(i);
-                    counter1 ++;
-                }
-                if(change){
-                    temp_dx.col(counter2) = polygon.col(i);
-                    counter2 ++;
-                }
-                if( (lati[0]-1) == i){
-                    if(intersezioni[0]!=polygon.col(i)){
-                        temp_sx.col(counter1) = intersezioni[0];
-                        counter1++;
-                    }
-                    change = true;
-                }
-                if((lati[1]-1) == i){
-                    if(intersezioni[1]!=polygon.col(i)){
-                        temp_sx.col(counter1) = intersezioni[1];
-                        counter1 ++;
-
-                        temp_dx.col(counter2) = intersezioni[1];
-                        counter2 ++;
-                        temp_dx.col(counter2) = intersezioni[0];
-                        counter2 ++;
-                    }
-                    change = false;
-                }
+            if(intersezioni.size() != 2){
+                cout << "error: " << intersezioni.size() << endl;
             }
+            else{
+                unsigned int dim = polygon.cols();
+                MatrixXd temp_sx(3,dim+2);
+                MatrixXd temp_dx(3,dim+2);
 
-            // estraggo sotto matrice riempita
-            MatrixXd sx = temp_sx.leftCols(counter1);
-            MatrixXd dx = temp_dx.leftCols(counter2);
+                bool change = false;
+                unsigned int counter1 = 0;
+                unsigned int counter2 = 0;
 
-            // chiamate ricorsive
-            split(sx, all, tracce, counter, cutted);
-            split(dx, all, tracce, counter, cutted);
+                for(unsigned int i = 0; i< dim ; i++ ){
+                    if(!change){
+                        temp_sx.col(counter1) = polygon.col(i);
+                        counter1 ++;
+                    }
+                    if(change){
+                        temp_dx.col(counter2) = polygon.col(i);
+                        counter2 ++;
+                    }
+                    if( (lati[0]-1) == i){
+                        if(intersezioni[0]!=polygon.col(i)){
+                            temp_sx.col(counter1) = intersezioni[0];
+                            counter1++;
+                        }
+                        change = true;
+                    }
+                    if((lati[1]-1) == i){
+                        if(intersezioni[1]!=polygon.col(i)){
+                            temp_sx.col(counter1) = intersezioni[1];
+                            counter1 ++;
+
+                            temp_dx.col(counter2) = intersezioni[1];
+                            counter2 ++;
+                            temp_dx.col(counter2) = intersezioni[0];
+                            counter2 ++;
+                        }
+                        change = false;
+                    }
+                }
+
+                // estraggo sotto matrice riempita
+                MatrixXd sx = temp_sx.leftCols(counter1);
+                MatrixXd dx = temp_dx.leftCols(counter2);
+
+                // chiamate ricorsive
+                split(sx, all, tracce, counter, cutted);
+                split(dx, all, tracce, counter, cutted);
+            }
         }
+    }
+    else{
+        cutted.push_back(polygon);
+         // extractinfo(polygon, mesh);
     }
 }
 
@@ -438,7 +427,8 @@ void cutting(vector<Fracture>& fratture, vector<Trace>& tracce){
     // Ciclo su tutte le fratture
     for(unsigned int i = 0; i<fratture.size(); i++){
         MatrixXd polygon = fratture[i].vertices; // vertici frattura
-        cout << "plane: " << i << endl;
+
+        cout << "poligono: " << i << endl;
 
         // Unifico vettore passanti e non passanti
         vector<unsigned int> passing = fratture[i].passing;
@@ -455,10 +445,8 @@ void cutting(vector<Fracture>& fratture, vector<Trace>& tracce){
         }
     }
 
-    /*
-    for(auto const& i :cutted)
-        cout << i << endl << endl;
-    */
+    //for(auto const& i :cutted)
+        //cout << i << endl << endl;
 
     cout << "tracce: " << tracce.size() << endl;
     cout << "cutted: "<<cutted.size() << endl;
