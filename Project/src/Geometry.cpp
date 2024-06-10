@@ -2,7 +2,6 @@
 #include "math.h"
 #include "tol.hpp"
 #include <iostream>
-#include<tol.hpp>
 #include <algorithm>
 
 namespace FractureNetwork {
