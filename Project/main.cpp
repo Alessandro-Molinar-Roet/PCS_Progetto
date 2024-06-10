@@ -81,7 +81,8 @@ int main()
     //     //
     //     //
     Mesh mesh;
-    cutting(fratture,tracce);
+    list<MatrixXd> cutted = cutting(fratture,tracce);
+    extractinfo(cutted,mesh);
 
     cout << "okay" << endl;
     return 0;

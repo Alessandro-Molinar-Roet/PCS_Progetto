@@ -51,7 +51,7 @@ struct Mesh
 
     unsigned int NumberCell0D = 0;
     vector<unsigned int> Cell0DId = {};
-    vector<Vector2d> Cell0DCoordinates = {};
+    vector<Vector3d> Cell0DCoordinates = {};
 
     unsigned int NumberCell1D = 0;
     vector<unsigned int> Cell1DId = {};

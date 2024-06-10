@@ -29,12 +29,12 @@ Vector3d applyThreshold(const Vector3d& vec);
 //******************************************************************************************************************************
 //Parte due
 
-void cutting(vector<Fracture>& fratture, vector<Trace>& tracce);
+list<MatrixXd> cutting(vector<Fracture>& fratture, vector<Trace>& tracce);
 
 void split(const MatrixXd& polygon, const vector<unsigned int>& passing, const vector<Trace>& tracce, unsigned int counter, list<MatrixXd>& cutted);
 
 bool IsInside(const MatrixXd& frattura, const Vector3d& tr1, const Vector3d& direzione, vector<Vector3d>& intersezioni, vector<unsigned int>& lato);
 
-void extractinfo(const MatrixXd& polygon, Mesh& mesh, const unsigned int& counter);
+void extractinfo(const list<MatrixXd>& cutted, Mesh& mesh);
 
 }
