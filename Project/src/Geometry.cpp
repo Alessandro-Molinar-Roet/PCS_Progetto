@@ -3,6 +3,8 @@
 #include "tol.hpp"
 #include <iostream>
 #include <algorithm>
+#include <set>
+#include <unordered_map>
 
 namespace FractureNetwork {
 
@@ -451,142 +453,132 @@ list<MatrixXd> cutting(vector<Fracture>& fratture, vector<Trace>& tracce){
 
 }
 
-
 void extractinfo(const list<MatrixXd>& cutted, Mesh& mesh){
+
+    unordered_map<Vector3d, unsigned int, Vector3dHash> map_point;
     vector<unsigned int> C0Id;
     vector<Vector3d> C0;
-    C0Id.reserve(cutted.size()*4);
-    C0.reserve(cutted.size()*4);
 
+    set<pair<unsigned int, unsigned int>> set_edge;
     vector<unsigned int> C1Id;
     vector<Vector2i> C1V;
-    C1Id.reserve(cutted.size()*4);
-    C1V.reserve(cutted.size()*4);
 
     vector<unsigned int> C2Id;
     vector<vector<unsigned int>> C2V;
     vector<vector<unsigned int>> C2E;
-    C2Id.reserve(cutted.size());
-    C2V.reserve(cutted.size());
-    C2E.reserve(cutted.size());
 
-    unsigned int area_counter = 0;
-    unsigned int edges_counter = 0;
+    unsigned int Idp = 0;
+    unsigned int position = 0;
+
+    unsigned int prev = 0;
+    unsigned int Ide = 0;
+    unsigned int  postion_edge = 0;
+    unsigned int Ida = 0;
 
     for (auto const& polygon : cutted) {
-        C2Id.push_back(area_counter); // ogni poligono è una cella 2D
-        area_counter++;
-        vector<unsigned int> Vertices;
-        vector<unsigned int> Edges;
+        C2Id.push_back(Ida);
+        Ida++;
+        vector<unsigned int> vertices;
+        vector<unsigned int> edges;
+        for(unsigned int i = 0; i<polygon.cols()+1; i++){
+            Vector3d point = polygon.col(i % polygon.cols());
 
-        unsigned int temp = 0;
-        bool old = false;
-        bool now = false;
-        for(unsigned int j = 0; j< polygon.cols()+1; j++){ //ciclo sui vertici del poligono
+            double power = pow(10, 12);
+            for (unsigned int i = 0; i < point.size(); ++i) {
+                point(i) = round(point(i)*power)/power;
+            }
 
-            Vector3d point = polygon.col( j % polygon.cols());
-            unsigned int position = 0;
-
-            // lambda function che cerca se un punto è gia in C0ID (con range tol)
-            // it iteratore di posizione dell'elemento
-            auto it = find_if(C0.begin(), C0.end(), [&point](const Vector3d& p){ return (p-point).isZero(tol);});
-
-            if( it != C0.end()){
-                // il punto era gia parte della mesh allora il suo ID = posizione nel vettore
-                position = distance(C0.begin(), it);
-
-                if(old){
-                    now = true;
-                }
-                else{
-                    now = false;
-                }
-                old = false;
+            // Celle0D
+            auto result1 = map_point.insert({point,Idp});
+            if(result1.second){
+                C0Id.push_back(Idp);
+                C0.push_back(point);
+                position = Idp;
+                Idp++;
             }
             else{
-                // il punto non era ancora parte della mesh allora il suo Id = dim vettore
-                C0.push_back(point);
-                position = distance(C0.begin(), C0.end())-1;
-                C0Id.push_back(position);
-
-                now = true;
-                old = true;
-            }
-            if(j<polygon.cols()){
-                Vertices.push_back(position);
+                position = result1.first->second;
             }
 
-            //la poszione è l'ID e vado a salvarli nei vertici dell 1D e 2D
-            Vector2i v(temp,position);
-            unsigned int edge = 0;
-            if(j>=1){
-                if(now){
-                    edge = edges_counter;
-                    C1Id.push_back(edges_counter);
-                    edges_counter++;
-                    C1V.push_back(v);
+
+            //Celle1D
+            if(i>=1){
+                pair<unsigned int, unsigned int> edge;
+                if(prev <= position){
+                    edge.first =  prev;
+                    edge.second = position;
                 }
                 else{
-                    auto it = find_if(C1V.begin(), C1V.end(), [&v](const Vector2i& p) {return p == v || p == v.reverse();});
-
-                    if(it!=C1V.end()){
-                        edge = distance(C1V.begin(),it);
-                    }
-                    else{
-                        edge = edges_counter;
-                        C1Id.push_back(edges_counter);
-                        edges_counter++;
-                        C1V.push_back(v);
-                    }
+                    edge.first = position;
+                    edge.second =  prev;
                 }
-                Edges.push_back(edge);
+
+                auto result2 = set_edge.insert(edge);
+                if(result2.second){
+                    C1Id.push_back(Ide);
+                    C1V.push_back({prev,position});
+                    postion_edge = Ide;
+                    Ide++;
+                }
+                else{
+                    postion_edge =  result2.first->second;
+                }
+
+                edges.push_back(postion_edge);
             }
 
-            temp = position;
+            prev = position;
+            if(i<polygon.cols()){
+                vertices.push_back(position);
+            }
         }
-        C2V.push_back(Vertices);
-        C2E.push_back(Edges);
+        C2V.push_back(vertices);
+        C2E.push_back(edges);
     }
 
-    mesh.NumberCell0D = C0Id.size();
+
+    // //CHECk:
+    // cout << "punti" << endl;
+    // for(unsigned int i = 0; i<C0Id.size(); i++){
+    //     cout << C0Id[i] << ": " << C0[i].transpose() << endl;
+    // }
+    // cout << endl;
+
+    // cout << "lati" << endl;
+    // for(unsigned int i = 0; i<C1Id.size(); i++){
+    //     cout << C1Id[i] << ": " << C1V[i].transpose() << " (  " << C0[C1V[i][0]].transpose() << ", " << C0[C1V[i][1]].transpose() << " )" << endl;
+    // }
+
+    // cout << endl;
+    // cout << "aree" << endl;
+    // for(unsigned int i = 0; i<C2Id.size(); i++){
+    //     cout << C2Id[i] << ": ";
+    //     for(unsigned int j = 0; j<C2V[i].size(); j++){
+    //         cout << C2V[i][j] << ", ";
+    //     }
+    //     cout << "    ";
+    //     for(unsigned int k = 0; k<C2E[i].size(); k++){
+    //         cout << C2E[i][k] << ", ";
+    //     }
+    //     cout << endl;
+    // }
+
+
+    mesh.NumberCell0D = Idp;
     mesh.Cell0DId = C0Id;
     mesh.Cell0DCoordinates = C0;
 
-    mesh.NumberCell1D = C1Id.size();
+    mesh.NumberCell1D = Ide;
     mesh.Cell1DId = C1Id;
     mesh.Cell1DVertices = C1V;
 
-    mesh.NumberCell2D = C2Id.size();
+    mesh.NumberCell2D = Ida;
     mesh.Cell2DId = C2Id;
     mesh.Cell2DVertices = C2V;
     mesh.Cell2DEdges = C2E;
-
-    /*
-    //CHECk:
-    cout << "punti" << endl;
-    for(unsigned int i = 0; i<C0Id.size(); i++){
-        cout << C0Id[i] << ": " << C0[i].transpose() << endl;
-    }
-    cout << endl;
-    cout << "lati" << endl;
-    for(unsigned int i = 0; i<C1Id.size(); i++){
-        cout << C1Id[i] << ": " << C1V[i].transpose() << " (  " << C0[C1V[i][0]].transpose() << ", " << C0[C1V[i][1]].transpose() << " )" << endl;
-    }
-
-    cout << endl;
-    cout << "aree" << endl;
-    for(unsigned int i = 0; i<C2Id.size(); i++){
-        cout << C2Id[i] << ": ";
-        for(unsigned int j = 0; j<C2V[i].size(); j++){
-            cout << C2V[i][j] << ", ";
-        }
-        cout << "    ";
-        for(unsigned int k = 0; k<C2E[i].size(); k++){
-            cout << C2E[i][k] << ", ";
-        }
-        cout << endl;
-    }
-    */
 }
 }
+
+
+
 

@@ -63,5 +63,17 @@ struct Mesh
     vector<vector<unsigned int>> Cell2DEdges = {};
 };
 
+//hush function for unordered map of Vectro3d
+struct Vector3dHash {
+    size_t operator()(const Eigen::Vector3d& vec) const {
+        size_t hx = hash<double>()(vec.x());
+        size_t hy = hash<double>()(vec.y());
+        size_t hz = hash<double>()(vec.z());
+        return hx ^ (hy << 1) ^ (hz << 2);  // Combina gli hash
+    }
+};
+
+
+
 
 }
