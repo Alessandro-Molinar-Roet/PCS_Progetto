@@ -4,12 +4,20 @@
 #include "src/FracturesNetworkLibrary.hpp"
 #include "src/utils.hpp"
 #include "src/Geometry.hpp"
+#include <iomanip>
+#include <fstream>
 
 using namespace std;
 using namespace FractureNetwork;
 
 int main()
 {
+    double tol2;
+    double tol3;
+
+    cin >> tol2;
+    cin >> tol3;
+
     string filepath = "DFN_files/FR10_data.txt";
 
     vector<Fracture> fratture;

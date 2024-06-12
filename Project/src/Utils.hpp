@@ -6,6 +6,9 @@ using namespace std;
 
 namespace FractureNetwork {
 
+// Definisce tolleranza in base a input utente e modifica variabili extern visibili a tutto il codice
+void Define_tol();
+
 // legge contenuto del file e salva in vettore di fratture
 bool ImportFractures(const string& filepath, vector<Fracture>& fractures);
 

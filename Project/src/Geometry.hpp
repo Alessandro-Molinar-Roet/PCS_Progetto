@@ -24,8 +24,6 @@ bool fracturesIntersection(const MatrixXd& fracture1,const MatrixXd& fracture2, 
 // Prende una fratuttra e una retta e ne calcola l'intersezione
 bool lineFractIntersect(const MatrixXd& fracture, const Vector3d& pointOnLine,const Vector3d& direction, vector<Vector3d>& intersections);
 
-Vector3d applyThreshold(const Vector3d& vec);
-
 //******************************************************************************************************************************
 //Parte due
 

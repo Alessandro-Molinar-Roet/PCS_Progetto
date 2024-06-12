@@ -2,7 +2,14 @@
 
 #include<limits>
 
-extern const double tol;
+extern const double standard;
+
+extern double tol1;
+
+extern double tol2;
+
+
+
 
 
 
