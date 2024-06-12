@@ -42,4 +42,38 @@ struct Trace{
 };
 
 
+struct Mesh
+{
+    // Struttura per salvare mesh generata dai tagli delle fratture
+    // Celle0D = punti (numero, ID, coordinate)
+    // Cell01D = lati (numero, ID, ID estremi lato)
+    // Celle2D = aree (numero, ID, ID vertici, ID lati)
+
+    unsigned int NumberCell0D = 0;
+    vector<unsigned int> Cell0DId = {};
+    vector<Vector3d> Cell0DCoordinates = {};
+
+    unsigned int NumberCell1D = 0;
+    vector<unsigned int> Cell1DId = {};
+    vector<Vector2i> Cell1DVertices = {};
+
+    unsigned int NumberCell2D = 0;
+    vector<unsigned int> Cell2DId = {};
+    vector<vector<unsigned int>> Cell2DVertices = {};
+    vector<vector<unsigned int>> Cell2DEdges = {};
+};
+
+//hush function for unordered map of Vectro3d
+struct Vector3dHash {
+    size_t operator()(const Eigen::Vector3d& vec) const {
+        size_t hx = hash<double>()(vec.x());
+        size_t hy = hash<double>()(vec.y());
+        size_t hz = hash<double>()(vec.z());
+        return hx ^ (hy << 1) ^ (hz << 2);  // Combina gli hash
+    }
+};
+
+
+
+
 }

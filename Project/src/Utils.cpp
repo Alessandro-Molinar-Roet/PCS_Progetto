@@ -1,12 +1,43 @@
 #include<fstream>
 #include<vector>
 #include<iostream>
-#include"Utils.hpp"
+#include "tol.hpp"
+#include "Utils.hpp"
 #include"math.h"
 #include<iomanip>
+#include <algorithm>
 
 using namespace std;
 namespace FractureNetwork {
+
+void Define_tol(){
+    //definizione delle tolleranze:
+    double tol1D_user = 0.0;
+    double tol2D_user = 0.0;
+
+    cout << "Inserire tolleranza 1D: \n";
+    while (!(cin >> tol1D_user)) {
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cout << "Errore: formato inserito non supportato.\n";
+        cout << "Inserire tolleranza 1D: \n";
+    }
+
+    cout << "Inserire tolleranza 2D: \n";
+    while (!(cin >> tol2D_user)) {
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cout << "Errore: formato inserito non supportato.\n";
+        cout << "Inserire tolleranza 2D: \n";
+    }
+
+    tol2D_user = max(standard, tol1D_user*tol1D_user);
+
+    tol1 = max(standard, tol1D_user);
+    tol2 = max(standard, tol2D_user);
+}
+
+
 
 bool ImportFractures(const string& filepath, vector<Fracture>& fractures){
     ifstream file;
