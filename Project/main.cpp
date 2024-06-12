@@ -28,12 +28,8 @@ int main()
     // cout << fratture.size() << endl;
     // cout << "Contenuto del vettore di fratture:\n";
     // for (const auto& f : fratture) {
-    //     cout << fixed << setprecision(12) << f.vertices << endl << endl;
-    // }
-
 
     CalculateTraces(fratture,tracce);
-
 
     // //CHECK:
     // // Stampa il contenuto del vettore di tracce
@@ -42,9 +38,7 @@ int main()
     //     cout << fixed << traccia.vertices << endl << endl;
     // }
 
-
     SortingFractureTraces(fratture,tracce);
-
 
     // //CHECK:
     // // Stampa di fake per verificare lo spostamento

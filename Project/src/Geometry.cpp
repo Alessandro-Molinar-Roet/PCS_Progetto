@@ -21,7 +21,7 @@ void CalculateTraces(vector<Fracture>& fractures, vector<Trace>& traces){
         MatrixXd fracture1 = fractures[i].vertices;
         for(unsigned int j = i+1; j<dim; j++ ){ // ciclo su tutti i poligoni >i (altre coppie gia cocntrollate)
             MatrixXd fracture2 = fractures[j].vertices;
-            if(near1(fracture1, fracture2)){ //se molto lontani non check nemmeno intersezione
+            if(near1(fracture1, fracture2)){ //se molto lontani non controllo nemmeno intersezione
                 //inizializzo variabili utili
                 Vector3d E1 = {};
                 Vector3d E2 = {};
@@ -80,24 +80,30 @@ void CalculateTraces(vector<Fracture>& fractures, vector<Trace>& traces){
 }
 
 //***************************************************************************************************************
-Vector3d normalP(const MatrixXd& fracture)
-{
+Vector3d normalP(const MatrixXd& fracture){
     Vector3d v1 = fracture.col(1)-fracture.col(0);
     Vector3d v2 = fracture.col(2)-fracture.col(1);
-    return v1.cross(v2);
+    return v1.cross(v2).normalized();
 }
 
 //***************************************************************************************************************
-bool lineFractIntersect(const MatrixXd& fracture, const Vector3d& pointOnLine,const Vector3d& direction,vector<Vector3d>& intersections)
-{
+bool lineFractIntersect(const MatrixXd& fracture, const Vector3d& pointOnLine,const Vector3d& direction,vector<Vector3d>& intersections){
 
     for(unsigned int i=0;i<fracture.cols();i++){
         //intersezione lato-retta
         Vector3d ithFractureVertex = fracture.col(i);
         Vector3d ithFractureEdge =fracture.col((i+1)%fracture.cols())-fracture.col(i);
-        double t = ((pointOnLine.cross(direction)).dot((ithFractureEdge.cross(direction)))-(ithFractureVertex.cross(direction)).dot((ithFractureEdge.cross(direction))))/pow((ithFractureEdge.cross(direction)).norm(), 2);
-        if (t >= -tol2 && t <= 1.0 + tol2)
-        {
+
+        if(abs(ithFractureEdge.cross(direction).norm())<tol){
+            if((ithFractureVertex-pointOnLine).cross(direction).isZero(tol)){
+                intersections.push_back(ithFractureVertex);
+                intersections.push_back(fracture.col((i+1)%fracture.cols()));
+
+            }
+            continue;
+        }
+        double t = ((pointOnLine.cross(direction)).dot((ithFractureEdge.cross(direction)))-(ithFractureVertex.cross(direction)).dot((ithFractureEdge.cross(direction))))/(ithFractureEdge.cross(direction).norm()*ithFractureEdge.cross(direction).norm());
+        if (t >= -tol && t <= 1.0+tol){
             intersections.push_back(ithFractureVertex + t * ithFractureEdge);
         }
         if(intersections.size()==2){
@@ -123,6 +129,7 @@ bool fracturesIntersection(const MatrixXd& fracture1,const MatrixXd& fracture2, 
     Vector3d edge = fracture2.col(1)-fracture2.col(0);
     Vector3d vertex = fracture2.col(0);
     //check che quel lato non sia parallelo al piano, e se lo è, prendo il lato successivo
+  
     if(abs(edge.dot(n1))<tol1)
     {
         edge = fracture2.col(2)-fracture2.col(1);
@@ -159,8 +166,7 @@ bool fracturesIntersection(const MatrixXd& fracture1,const MatrixXd& fracture2, 
     if(abs(a-b)<tol1){ //i due punti di intersezione sono sovrapposti
         return false;
     }
-    if(a>b)
-    {
+    if(a>b){
         swap(a,b);
         swap(intersections[0],intersections[1]);
     }
@@ -170,15 +176,12 @@ bool fracturesIntersection(const MatrixXd& fracture1,const MatrixXd& fracture2, 
         return false;
     }
 
-    if(c>d)
-    {
+    if(c>d){
         swap(c,d);
         swap(intersections[2],intersections[3]);
     }
-
     if(b-tol1<=c || d-tol1<=a)// i segmenti [a,b] e [c,d] non si intersecano
     {
-
         return false;
     }
     //c'è un'intersezione "propria", le tracce sono non-passanti per entrambe le fratture
@@ -217,6 +220,7 @@ bool fracturesIntersection(const MatrixXd& fracture1,const MatrixXd& fracture2, 
         E2 = intersections[1];
         tips1 = false;
         tips2 = true;
+
         if(abs(a-c)<tol1 && abs(d-b)<tol1)
         {
             tips2 = false;
@@ -228,8 +232,7 @@ bool fracturesIntersection(const MatrixXd& fracture1,const MatrixXd& fracture2, 
 
 //***************************************************************************************************************
 // Bounding box:
-bool near1(const MatrixXd& fracture1, const MatrixXd& fracture2)
-{
+bool near1(const MatrixXd& fracture1, const MatrixXd& fracture2){
     bool check = true;
 
     Vector3d max1 = fracture1.rowwise().maxCoeff();
@@ -257,30 +260,30 @@ bool near2(const MatrixXd& fracture1, const MatrixXd& fracture2){
     VectorXd bar_fracture2 = fracture2.colwise().mean();
 
     double max_1 = 0.0;
-    for (unsigned int j = 0; j < fracture1.col(0).size(); j++){
-        double length1 = bar_fracture1.norm() - fracture1.col(j).norm();
-        if (length1 > max_1){
+    for (unsigned int j = 0; j < fracture1.cols(); j++){
+        double length1 = abs(bar_fracture1.norm() - fracture1.col(j).norm());
+        if (length1 > max_1+tol){
             max_1 = length1;
         }
     }
 
     double max_2 = 0.0;
-    for (unsigned int j = 0; j < fracture2.col(0).size(); j++){
-        double length2 = bar_fracture2.norm() - fracture2.col(j).norm();
-        if (length2 > max_2){
+    for (unsigned int j = 0; j < fracture2.cols(); j++){
+        double length2 = abs(bar_fracture2.norm() - fracture2.col(j).norm());
+        if (length2 > max_2+tol){
             max_2 = length2;
         }
     }
 
     double control_length = max_1 + max_2;
-    double bar_distance = (bar_fracture1 - bar_fracture2).norm();
+    double bar_distance = abs((bar_fracture1 - bar_fracture2).norm());
 
     if (bar_distance + tol1 < control_length){
         cout << "Intersection is possible" << endl;
     }
     else{
         check = false;
-        cout << "Intersection is impossible" << endl;
+        //cout << "Intersection is impossible" << endl;
     }
     return check;
 }
