@@ -2,10 +2,8 @@
 #include "src_paraview/paraview.hpp"
 #include <iostream>
 #include "src/FracturesNetworkLibrary.hpp"
-#include "src/utils.hpp"
+#include "src/Utils.hpp"
 #include "src/Geometry.hpp"
-#include <iomanip>
-#include <fstream>
 
 using namespace std;
 using namespace FractureNetwork;

@@ -94,8 +94,8 @@ bool lineFractIntersect(const MatrixXd& fracture, const Vector3d& pointOnLine,co
         Vector3d ithFractureVertex = fracture.col(i);
         Vector3d ithFractureEdge =fracture.col((i+1)%fracture.cols())-fracture.col(i);
 
-        if(abs(ithFractureEdge.cross(direction).norm())<tol){
-            if((ithFractureVertex-pointOnLine).cross(direction).isZero(tol)){
+        if(abs(ithFractureEdge.cross(direction).norm())<tol2){
+            if((ithFractureVertex-pointOnLine).cross(direction).isZero(tol2)){
                 intersections.push_back(ithFractureVertex);
                 intersections.push_back(fracture.col((i+1)%fracture.cols()));
 
@@ -103,7 +103,7 @@ bool lineFractIntersect(const MatrixXd& fracture, const Vector3d& pointOnLine,co
             continue;
         }
         double t = ((pointOnLine.cross(direction)).dot((ithFractureEdge.cross(direction)))-(ithFractureVertex.cross(direction)).dot((ithFractureEdge.cross(direction))))/(ithFractureEdge.cross(direction).norm()*ithFractureEdge.cross(direction).norm());
-        if (t >= -tol && t <= 1.0+tol){
+        if (t >= -tol2 && t <= 1.0+tol2){
             intersections.push_back(ithFractureVertex + t * ithFractureEdge);
         }
         if(intersections.size()==2){
@@ -262,7 +262,7 @@ bool near2(const MatrixXd& fracture1, const MatrixXd& fracture2){
     double max_1 = 0.0;
     for (unsigned int j = 0; j < fracture1.cols(); j++){
         double length1 = abs(bar_fracture1.norm() - fracture1.col(j).norm());
-        if (length1 > max_1+tol){
+        if (length1 > max_1+tol1){
             max_1 = length1;
         }
     }
@@ -270,7 +270,7 @@ bool near2(const MatrixXd& fracture1, const MatrixXd& fracture2){
     double max_2 = 0.0;
     for (unsigned int j = 0; j < fracture2.cols(); j++){
         double length2 = abs(bar_fracture2.norm() - fracture2.col(j).norm());
-        if (length2 > max_2+tol){
+        if (length2 > max_2+tol1){
             max_2 = length2;
         }
     }

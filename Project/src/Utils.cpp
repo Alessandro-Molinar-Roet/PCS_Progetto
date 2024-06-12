@@ -6,6 +6,7 @@
 #include"math.h"
 #include<iomanip>
 #include <algorithm>
+#include <iomanip>
 
 using namespace std;
 namespace FractureNetwork {
