@@ -16,7 +16,7 @@ void Define_tol(){
     double tol2D_user = 0.0;
 
     cout << "Inserire tolleranza 1D: \n";
-    while (!(cin >> tol1D_user)) {
+    while (!(cin >> tol1D_user)){
         cin.clear();
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
         cout << "Errore: formato inserito non supportato.\n";
@@ -127,7 +127,7 @@ bool PrintTrace(const string& filepath, const vector<Trace>& traces){
         myfile << "# TraceId; FractureId1; FractureId2; X1; Y1; Z1; X2; Y2; Z2" << endl;
         myfile << traces[i].ID << "; "
                << traces[i].first_generator << "; " << traces[i].second_generator << "; "
-               <<fixed<<setprecision(12)<< traces[i].vertices(0,0) << "; " << traces[i].vertices(1,0) << "; " << traces[i].vertices(2,0) << "; "
+               << fixed<<setprecision(12) << traces[i].vertices(0,0) << "; " << traces[i].vertices(1,0) << "; " << traces[i].vertices(2,0) << "; "
                << traces[i].vertices(0,1) << "; " << traces[i].vertices(1,1) << "; " << traces[i].vertices(2,1) << endl;
     }
     myfile.close();
@@ -140,7 +140,7 @@ bool PrintFractureTraces(const string& filepath, const  vector<Fracture>& fractu
     ofstream myfile;
     myfile.open(filepath);
 
-    if(myfile.fail()){
+    if(myfile.fail()){        
         return false;
     }
 
@@ -166,7 +166,6 @@ bool PrintFractureTraces(const string& filepath, const  vector<Fracture>& fractu
             myfile << "\n\n";
         }
     }
-
     return true;
 }
 

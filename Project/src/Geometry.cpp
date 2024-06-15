@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <set>
 #include <unordered_map>
+#include <unordered_set>
 
 namespace FractureNetwork {
 
@@ -94,8 +95,8 @@ bool lineFractIntersect(const MatrixXd& fracture, const Vector3d& pointOnLine,co
         Vector3d ithFractureVertex = fracture.col(i);
         Vector3d ithFractureEdge =fracture.col((i+1)%fracture.cols())-fracture.col(i);
 
-        if(abs(ithFractureEdge.cross(direction).norm())<tol){
-            if((ithFractureVertex-pointOnLine).cross(direction).isZero(tol)){
+        if(abs(ithFractureEdge.cross(direction).norm())<tol2){
+            if((ithFractureVertex-pointOnLine).cross(direction).isZero(tol2)){
                 intersections.push_back(ithFractureVertex);
                 intersections.push_back(fracture.col((i+1)%fracture.cols()));
 
@@ -103,7 +104,7 @@ bool lineFractIntersect(const MatrixXd& fracture, const Vector3d& pointOnLine,co
             continue;
         }
         double t = ((pointOnLine.cross(direction)).dot((ithFractureEdge.cross(direction)))-(ithFractureVertex.cross(direction)).dot((ithFractureEdge.cross(direction))))/(ithFractureEdge.cross(direction).norm()*ithFractureEdge.cross(direction).norm());
-        if (t >= -tol && t <= 1.0+tol){
+        if (t >= -tol2 && t <= 1.0+tol2){
             intersections.push_back(ithFractureVertex + t * ithFractureEdge);
         }
         if(intersections.size()==2){
@@ -240,7 +241,7 @@ bool near1(const MatrixXd& fracture1, const MatrixXd& fracture2){
     Vector3d max2 = fracture2.rowwise().maxCoeff();
     Vector3d min2 = fracture2.rowwise().minCoeff();
 
-    if (min1(0) > max2(0)+tol1 || min1(1) > max2(1)+tol1 || min1(2) > max2(2)+tol1)
+    if (min1(0)> max2(0)+tol1 || min1(1) > max2(1)+tol1 || min1(2) > max2(2)+tol1)
     {
         check = false;
     }
@@ -262,7 +263,7 @@ bool near2(const MatrixXd& fracture1, const MatrixXd& fracture2){
     double max_1 = 0.0;
     for (unsigned int j = 0; j < fracture1.cols(); j++){
         double length1 = abs(bar_fracture1.norm() - fracture1.col(j).norm());
-        if (length1 > max_1+tol){
+        if (length1 > max_1+tol1){
             max_1 = length1;
         }
     }
@@ -270,7 +271,7 @@ bool near2(const MatrixXd& fracture1, const MatrixXd& fracture2){
     double max_2 = 0.0;
     for (unsigned int j = 0; j < fracture2.cols(); j++){
         double length2 = abs(bar_fracture2.norm() - fracture2.col(j).norm());
-        if (length2 > max_2+tol){
+        if (length2 > max_2+tol1){
             max_2 = length2;
         }
     }
@@ -341,7 +342,8 @@ void split(const MatrixXd& polygon, const vector<unsigned int>& all, const vecto
     bool full = false;
 
     vector<Vector3d> intersezioni = {};
-    vector<unsigned int> lati = {};
+    vector<unsigned int> lati;
+    lati.reserve(2);
 
     if(counter < all.size()){
         current = all[counter]; // ID traccia tagliante
@@ -349,10 +351,17 @@ void split(const MatrixXd& polygon, const vector<unsigned int>& all, const vecto
         point2 = tracce[current].vertices.col(1); // estremo 2
         direzione = point2-point1; // direzione dell traccia
 
-        full = IsInside(polygon,point1,direzione,intersezioni,lati); // true se la frattura contiene l'estremo uno della traccia
+        bool near = near1(tracce[current].vertices,polygon);
+        if(near){
+            // full = true se la frattura contiene un estremo della traccia
+            full = IsInside(polygon,point1,direzione,intersezioni,lati);
+            if( lati[0] == lati[1]){
+                full = false;
+            }
+        }
 
         counter++;
-        if( !full || lati[0] == lati[1]){
+        if( !full){
             split(polygon,all,tracce,counter,cutted);
         }
         else{
@@ -438,34 +447,46 @@ list<MatrixXd> cutting(vector<Fracture>& fratture, vector<Trace>& tracce){ // co
         }
     }
 
-    // CHECK:
-    //for(auto const& i :cutted)
-        //cout << i << endl << endl;
-    // cout << "tracce: " << tracce.size() << endl;
-    // cout << "cutted: "<<cutted.size() << endl;
+    // // CHECK:
+    // for(auto const& i :cutted)
+    //     cout << i << endl << endl;
+
+    cout << "tracce: " << tracce.size() << endl;
+    cout << "cutted: "<<cutted.size() << endl;
+
     return cutted;
 
 }
 
 void extractinfo(const list<MatrixXd>& cutted, Mesh& mesh){
+    unsigned int dim = cutted.size();
+
+    //inizializzo strutture dati necessarie
     unordered_map<Vector3d, unsigned int, Vector3dHash> map_point;
     vector<unsigned int> C0Id;
+    C0Id.reserve(dim*4);
     vector<Vector3d> C0;
+    C0.reserve(dim*4);
 
-    set<pair<unsigned int, unsigned int>> set_edge;
+    unordered_set<pair<unsigned int, unsigned int>,pair_hash> set_edge;
     vector<unsigned int> C1Id;
+    C1Id.reserve(dim*4);
     vector<Vector2i> C1V;
+    C1Id.reserve(dim*4);
 
     vector<unsigned int> C2Id;
+    C2Id.reserve(dim);
     vector<vector<unsigned int>> C2V;
+    C2V.reserve(dim);
     vector<vector<unsigned int>> C2E;
+    C2E.reserve(dim);
 
     unsigned int Idp = 0;
     unsigned int position = 0;
 
     unsigned int prev = 0;
     unsigned int Ide = 0;
-    unsigned int  postion_edge = 0;
+    unsigned int postion_edge = 0;
     unsigned int Ida = 0;
 
     for (auto const& polygon : cutted) {
@@ -476,7 +497,8 @@ void extractinfo(const list<MatrixXd>& cutted, Mesh& mesh){
         for(unsigned int i = 0; i<polygon.cols()+1; i++){
             Vector3d point = polygon.col(i % polygon.cols());
 
-            double power = pow(10, 12);
+            int rounding = -static_cast<int>(log10(tol1)); //forza conversione in intero
+            double power = pow(10, rounding);
             for (unsigned int i = 0; i < point.size(); ++i) {
                 point(i) = round(point(i)*power)/power;
             }
@@ -528,8 +550,7 @@ void extractinfo(const list<MatrixXd>& cutted, Mesh& mesh){
         C2E.push_back(edges);
     }
 
-
-    // //CHECk:
+    //CHECk:
     // cout << "punti" << endl;
     // for(unsigned int i = 0; i<C0Id.size(); i++){
     //     cout << C0Id[i] << ": " << C0[i].transpose() << endl;
@@ -554,7 +575,6 @@ void extractinfo(const list<MatrixXd>& cutted, Mesh& mesh){
     //     }
     //     cout << endl;
     // }
-
 
     mesh.NumberCell0D = Idp;
     mesh.Cell0DId = C0Id;

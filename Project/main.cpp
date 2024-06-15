@@ -3,13 +3,14 @@
 #include "Utils.hpp"
 #include "Geometry.hpp"
 #include <iostream>
+#include <chrono>
 
 using namespace std;
 using namespace FractureNetwork;
 
 int main()
 {
-    Define_tol();
+    // Define_tol();
 
     string filepath = "DFN_files/FR3_data.txt";
 
@@ -21,13 +22,6 @@ int main()
         cout << "Errore nell'apertura del file" << endl;
         return 1;
     }
-
-
-    // //CHECK:
-    // // Stampa il contenuto del vettore di fratture
-    // cout << fratture.size() << endl;
-    // cout << "Contenuto del vettore di fratture:\n";
-    // for (const auto& f : fratture) {
 
     CalculateTraces(fratture,tracce);
 
@@ -59,7 +53,6 @@ int main()
     //     }
     // }
 
-
     //Print
     string traceFile = "tracce.txt";
     bool printed = PrintTrace(traceFile, tracce);
@@ -74,12 +67,17 @@ int main()
         return 1;
     }
 
-    //     //PUNTO 2:
+    //     //PARTE 2:
     //     //
     //     //
     Mesh mesh;
+    auto start = std::chrono::high_resolution_clock::now();
     list<MatrixXd> cutted = cutting(fratture,tracce);
     extractinfo(cutted,mesh);
+    auto end = std::chrono::high_resolution_clock::now();
+
+    std::chrono::duration<double> duration = end - start;
+    std::cout << "Tempo di esecuzione: " << duration.count() << " secondi" << std::endl;
 
     cout << "okay" << endl;
     return 0;

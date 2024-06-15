@@ -36,6 +36,8 @@ void Export_paraview( vector<Fracture> &f,  vector<Trace>&t){
     // creo vettore con id raggruppati per poligono
     vector<vector<unsigned int>> polygon_vertices;
     unsigned int start_index = 0;
+    //vettore id conta quante triangoli per poligoni
+    vector<unsigned int> color;
     for (const auto&  polygon: f){
         MatrixXd vertices = polygon.vertices;
 
@@ -50,8 +52,8 @@ void Export_paraview( vector<Fracture> &f,  vector<Trace>&t){
             temp.col(2) = polygon.vertices.col(i+1);
             triangolation.push_back(temp);
         }
-
         //stesso id per stesso
+        unsigned int counter = 0;
         for(unsigned int i = 0; i < triangolation.size(); i++){
             vector<unsigned int> polygon_ids;
             Matrix3d temp = triangolation[i];
@@ -59,8 +61,10 @@ void Export_paraview( vector<Fracture> &f,  vector<Trace>&t){
                 polygon_ids.push_back(start_index);
                 start_index ++;
             }
+            counter++;
             polygon_vertices.push_back(polygon_ids);
         }
+        color.push_back(counter);
     }
 
     //inizializzo vettori propietà
@@ -68,15 +72,25 @@ void Export_paraview( vector<Fracture> &f,  vector<Trace>&t){
     vector<UCDProperty<double>> polygons_properties;
 
     VectorXi material_p(polygon_vertices.size());
-    for (int i = 0; i < material_p.size(); i++){
-        material_p(1) = 1;
+    unsigned int position = 0;
+    unsigned int p = 1;
+    unsigned int c = 0;
+
+    for (unsigned int i = 0; i < material_p.size(); i++){
+        if(c >= color[position]){
+            c = 0;
+            p++;
+            position++;
+        }
+        material_p(i) = p;
+        c++;
     }
 
     UCDUtilities UCD;
     UCD.ExportPolygons ("polygons_paraview.inp", points_p, polygon_vertices, points_properties, polygons_properties, material_p);
 
 
-    //tracce
+    // tracce
     // numero totale di estremi
     size_t n = t.size();
     size_t num = t.size() * 2;
@@ -105,7 +119,6 @@ void Export_paraview( vector<Fracture> &f,  vector<Trace>&t){
 
 
 void Export_paraview2( vector<MatrixXd> &f){
-    cout << "okay" << endl;
     // numero totale di punti
     int N = 0;
     for (const auto&  polygon: f){
@@ -163,7 +176,7 @@ void Export_paraview2( vector<MatrixXd> &f){
 
     VectorXi material_p(polygon_vertices.size());
     for (int i = 0; i < material_p.size(); ++i){
-        material_p(1) = 1;
+        material_p(i) = 1;
     }
 
     UCDUtilities UCD;
