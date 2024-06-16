@@ -1,0 +1,116 @@
+@startuml
+
+package FracturesNetworkLibrary <<Folder>> #Yellow
+{
+class Fracture 
+{
++ IDfractures: unsigned int
++ Vertices: MatrixXd
++ Passing : vector<unsigned int>
++ Not passing : vector<unsigned int>
+
+}
+class Trace
+{
++ IDTraces : unsigned int
++ Length : double
++ Vertices : Matrix<double,3,2>
++ First_generator : unsigned int
++ Second_generator : unsigned int 
+}
+}
+
+package DFN <<Folder>> #LightGreen
+{
+
+abstract class Geometry
+{
++ CalculateTraces(fractures, traces) : void
++ normalP (fracture) : Vector3d
++ lineFractIntersect(fracture, pointOnLine, directions, intersections) : bool
++ applyThreshold (vec) : Vector3d
++ fracturesIntersection(fracture1, fracture2, E1, E2, tips1, tips2) : bool
++ near1(fracture1, fracture2) : bool
++ near2(fracture1, fracture2) : bool
+}
+abstract class tol
+{
++ tol : const double
+}
+abstract class Utils
+{
++ ImportFractures(filepath, fractures) : bool
++ SortingFractureTraces(fractures, traces) : void
++ PrintTrace(filepath, traces) : bool
++ PrintFractureTraces(filepath, fractures, traces) : bool
+}
+
+}
+package DFN_Paraview <<Folder>> #LightBlue
+{
+class Paraview 
+{
++ Export_paraview(vector<Fracture>, vector<Trace>)
++ Export_paraview2(vector<MatrixXd>)
+}
+}
+package DFN_Test <<Folder>> #Violet
+{
+class Tests
+{
++ lineFractIntersectTest
++ normalPTest
++ near1Test
++ near2Test
++ nearDifferenceTest
++ UCDTest
+}
+}
+package UCDUtilities <<Frame>>
+{
+}
+
+Traces ..[thickness=2]> Fracture : created by intersection of 2
+Traces --[thickness=2]> Geometry
+Traces --[thickness=2]> Utils
+Fracture --[thickness=2]> Geometry
+Fracture --[thickness=2]> Utils
+DFN --[thickness=2]> DFN_Paraview
+DFN_Paraview --[thickness=2]> UCDUtilities
+DFN --[thickness=2]> DFN_Test
+
+note left of Geometry::CalculateTraces
+<color:Blue> (vector<Fracture>, vector<Traces>)
+end note
+note left of Geometry::normalP
+<color:Blue> (MatrixXd)
+end note
+note left of Geometry::lineFractIntersect
+<color:Blue> (MatrixXd, Vector3d, Vector3d vector<Vector3d>)
+end note
+note left of Geometry::applyThreshold
+<color:Blue> (Vector3d)
+end note
+note left of Geometry::fracturesIntersection
+<color:Blue> (MatrixXd, MatrixXd, Vector3d, Vector3d, bool, bool)
+end note
+note left of Geometry::near1
+<color:Blue> (MatrixXd, MatrixXd)
+end note
+note left of Geometry::near2
+<color:Blue> (MatrixXd, MatrixXd)
+end note
+
+note right of Utils::ImportFractures
+<color:Blue> (string, vector<Fracture>)
+end note
+note right of Utils::SortingFractureTraces
+<color:Blue> (vector<Fracture>, vector <Trace>)
+end note
+note right of Utils::PrintTrace
+<color:Blue> (string, vector <Trace>)
+end note
+note right of Utils::PrintFractureTraces
+<color:Blue> (string, vector<Fracture>, vector <Trace>)
+end note
+@enduml

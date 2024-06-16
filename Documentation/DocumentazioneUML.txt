@@ -1,0 +1,192 @@
+@startuml
+
+package FracturesNetworkLibrary <<Folder>> #LightSeaGreen
+{
+class Fracture 
+{
++ IDfractures: unsigned int
++ Vertices: MatrixXd
++ Passing : vector<unsigned int>
++ Not passing : vector<unsigned int>
+
+}
+class Trace
+{
++ IDTraces : unsigned int
++ Length : double
++ Vertices : Matrix<double,3,2>
++ First_generator : unsigned int
++ Second_generator : unsigned int 
+}
+class Mesh
+{
+{static} Cell0D
++ NumberCell0D : unsigned int
++ Cell0DId : vector<unsigned int>
++ Cell0DCoordinates : vector<Vector3d>
+
+{static} Cell1D
++ NumberCell1D : unsigned int
++ Cell1DId : vector<unsigned int>
++ Cell1DVertices : vector<Vector2i>
+
+{static} Cell2D
++ NumberCell2D : unsigned int
++ Cell2DId : vector<unsigned int>
++ Cell2DVertices : vector<vector<unsigned int>>
++ Cell2DEdges : vector<vector<unsigned int>>
+}
+class Vector3dHash
+{
+operator() : size_t
++ hx : size_t
++ hy : size_t
++ hz : size_t 
+}
+
+}
+
+package DFN_Punto1 <<Folder>> #Cyan
+{
+
+abstract class Geometry
+{
++ CalculateTraces(fractures, traces) : void
++ normalP (fracture) : Vector3d
++ lineFractIntersect(fracture, pointOnLine, directions, intersections) : bool
++ applyThreshold (vec) : Vector3d
++ fracturesIntersection(fracture1, fracture2, E1, E2, tips1, tips2) : bool
++ near1(fracture1, fracture2) : bool
++ near2(fracture1, fracture2) : bool
+}
+abstract class tol
+{
++ tol : const double
+}
+abstract class Utils
+{
++ ImportFractures(filepath, fractures) : bool
++ SortingFractureTraces(fractures, traces) : void
++ PrintTrace(filepath, traces) : bool
++ PrintFractureTraces(filepath, fractures, traces) : bool
+}
+
+}
+package DFN_Paraview <<Folder>> #MediumAquaMarine
+{
+class Paraview 
+{
++ Export_paraview(vector<Fracture>, vector<Trace>)
++ Export_paraview2(vector<MatrixXd>)
+}
+}
+package DFN_Test1 <<Folder>> #LightBlue
+{
+class Tests
+{
++ lineFractIntersectTest
++ normalPTest
++ near1Test
++ near2Test
++ nearDifferenceTest
++ UCDTest
+}
+}
+package UCDUtilities <<Frame>> #LightSkyBlue
+{
+}
+package main <<Folder>> #RoyalBlue
+{
+class Punto1
+{
++ Fracture
++ Trace
+}
+class Punto2
+{
++ Fracture
++ Trace
++ Mesh
++ Vector3dHash
+}
+}
+package DFN_Punto2 <<Folder>> #Cyan
+{
+abstract class Geometry_2
+{
++ isInside(frattura, tr1, direzione, intersezioni, lato) : bool
++ cutting(fratture, tracce) : list<MatrixXd>
++ split(polygon, passing, tracce, counter, cutted) : void
++ extractinfo(cutted, mesh)
+}
+}
+package DFNTest_2 <<Folder>> #LightBlue
+{
+class Tests_2
+{
++ splitTest
+}
+}
+
+FracturesNetworkLibrary --[thickness=2]> Punto1
+Punto1 --[thickness=2]> DFN_Punto1
+main --[thickness=2]> DFN_Punto1
+DFN_Punto1 --[thickness=2]> DFN_Paraview
+DFN_Paraview --[thickness=2]> UCDUtilities
+DFN_Punto1 --[thickness=2]> DFN_Test1
+
+FracturesNetworkLibrary --[thickness=2]> Punto2
+DFN_Punto2 --[thickness=2]> DFNTest_2
+
+main --[thickness=2]> DFN_Punto1
+main --[thickness=2]> DFN_Punto2
+
+note left of Geometry::CalculateTraces
+<color:Blue> (vector<Fracture>, vector<Traces>)
+end note
+note left of Geometry::normalP
+<color:Blue> (MatrixXd)
+end note
+note left of Geometry::lineFractIntersect
+<color:Blue> (MatrixXd, Vector3d, Vector3d vector<Vector3d>)
+end note
+note left of Geometry::applyThreshold
+<color:Blue> (Vector3d)
+end note
+note left of Geometry::fracturesIntersection
+<color:Blue> (MatrixXd, MatrixXd, Vector3d, Vector3d, bool, bool)
+end note
+note left of Geometry::near1
+<color:Blue> (MatrixXd, MatrixXd)
+end note
+note left of Geometry::near2
+<color:Blue> (MatrixXd, MatrixXd)
+end note
+
+note left of Utils::ImportFractures
+<color:Blue> (string, vector<Fracture>)
+end note
+note left of Utils::SortingFractureTraces
+<color:Blue> (vector<Fracture>, vector <Trace>)
+end note
+note left of Utils::PrintTrace
+<color:Blue> (string, vector <Trace>)
+end note
+note left of Utils::PrintFractureTraces
+<color:Blue> (string, vector<Fracture>, vector <Trace>)
+end note
+
+note left of Geometry_2::isInside
+<color:Blue> MatrixXd, Vector3d, Vector3d, vector<Vector3d>, vector<unsigned int>
+end note
+note left of Geometry_2::cutting
+<color:Blue> vector<Fracture>, vector<Trace>
+end note
+note left of Geometry_2::split
+<color:Blue> MatrixXd, vector<unsigned int>, vector<Trace>, unsigned int, list<MatrixXd>
+end note
+note left of Geometry_2::extractinfo
+<color:Blue> list<MatrixXd>, Mesh
+end note
+
+@enduml

@@ -1,0 +1,91 @@
+@startuml
+package FracturesNetworkLibrary <<Folder>> #Yellow
+{
+class Fracture 
+{
++ IDfractures: unsigned int
++ Vertices: MatrixXd
++ Passing : vector<unsigned int>
++ Not passing : vector<unsigned int>
+
+}
+class Trace
+{
++ IDTraces : unsigned int
++ Length : double
++ Vertices : Matrix<double,3,2>
++ First_generator : unsigned int
++ Second_generator : unsigned int 
+}
+class Mesh
+{
+{static} Cell0D
++ NumberCell0D : unsigned int
++ Cell0DId : vector<unsigned int>
++ Cell0DCoordinates : vector<Vector3d>
+
+{static} Cell1D
++ NumberCell1D : unsigned int
++ Cell1DId : vector<unsigned int>
++ Cell1DVertices : vector<Vector2i>
+
+{static} Cell2D
++ NumberCell2D : unsigned int
++ Cell2DId : vector<unsigned int>
++ Cell2DVertices : vector<vector<unsigned int>>
++ Cell2DEdges : vector<vector<unsigned int>>
+}
+class Vector3dHash
+{
+operator() : size_t
++ hx : size_t
++ hy : size_t
++ hz : size_t 
+}
+class pair_hash
+{
++ operator() : size_t
++ p1 : size_t
++ p2 : size_t
+}
+}
+package DFN <<Folder>> #LightGreen
+{
+abstract class Geometry
+{
++ isInside(frattura, tr1, direzione, intersezioni, lato) : bool
++ cutting(fratture, tracce) : list<MatrixXd>
++ split(polygon, passing, tracce, counter, cutted) : void
++ extractinfo(cutted, mesh)
+}
+}
+
+package DFNTest <<Folder>> #Violet
+{
+class Tests
+{
++ splitTest
+}
+}
+Trace ..[thickness=2]> Fracture : created by intersection of 2
+Trace --[thickness=2]> Geometry
+Mesh --[thickness=2]> Geometry
+Fracture --[thickness=2]> Geometry
+Vector3dHash --[thickness=2]> Geometry
+pair_hash --[thickness=2]> Geometry
+DFN --[thickness=2]> DFNTest
+
+note left of Geometry::isInside
+<color:Blue> MatrixXd, Vector3d, Vector3d, vector<Vector3d>, vector<unsigned int>
+end note
+note left of Geometry::cutting
+<color:Blue> vector<Fracture>, vector<Trace>
+end note
+note left of Geometry::split
+<color:Blue> MatrixXd, vector<unsigned int>, vector<Trace>, unsigned int, list<MatrixXd>
+end note
+note left of Geometry::extractinfo
+<color:Blue> list<MatrixXd>, Mesh
+end note
+
+@enduml
