@@ -455,7 +455,6 @@ list<MatrixXd> cutting(vector<Fracture>& fratture, vector<Trace>& tracce){ // co
     cout << "cutted: "<<cutted.size() << endl;
 
     return cutted;
-
 }
 
 void extractinfo(const list<MatrixXd>& cutted, Mesh& mesh){

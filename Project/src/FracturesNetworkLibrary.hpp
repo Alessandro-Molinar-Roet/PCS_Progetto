@@ -9,6 +9,7 @@ using namespace Eigen;
 
 namespace FractureNetwork{
 
+
 struct Fracture{
     // struttura dati per salvare una frattura
     // ID = Id poligono supposto uguale alla poszione in cui viene letto
@@ -69,7 +70,7 @@ struct Vector3dHash {
         size_t hx = hash<double>()(vec.x());
         size_t hy = hash<double>()(vec.y());
         size_t hz = hash<double>()(vec.z());
-        return hx ^ (hy << 1) ^ (hz << 2);  // << sposta il numero di bit a sinsitra
+        return hx ^ (hy << 1) ^ (hz << 2) ;  // << sposta il numero di bit a sinsitra
     }
 };
 

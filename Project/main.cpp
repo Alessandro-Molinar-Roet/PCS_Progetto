@@ -12,7 +12,7 @@ int main()
 {
     // Define_tol();
 
-    string filepath = "DFN_files/FR3_data.txt";
+    string filepath = "DFN_files/FR200_data.txt";
 
     vector<Fracture> fratture;
     vector<Trace> tracce;
