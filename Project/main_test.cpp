@@ -1,7 +1,5 @@
 #include "src_test/test.hpp"
-#include <math.h>
 #include <Eigen/Dense>
-#include <vector>
 
 int main(int argc, char **argv)
 {

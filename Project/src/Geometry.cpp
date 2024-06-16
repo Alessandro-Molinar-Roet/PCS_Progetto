@@ -278,12 +278,8 @@ bool near2(const MatrixXd& fracture1, const MatrixXd& fracture2){
     double control_length = max_1 + max_2;
     double bar_distance = abs((bar_fracture1 - bar_fracture2).norm());
 
-    if (bar_distance + tol1 < control_length){
-        cout << "Intersection is possible" << endl;
-    }
-    else{
+    if (bar_distance > control_length + tol1){
         check = false;
-        //cout << "Intersection is impossible" << endl;
     }
     return check;
 }
