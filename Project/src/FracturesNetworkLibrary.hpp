@@ -63,13 +63,24 @@ struct Mesh
     vector<vector<unsigned int>> Cell2DEdges = {};
 };
 
+
 //hush function for unordered map of Vectro3d
 struct Vector3dHash {
-    size_t operator()(const Eigen::Vector3d& vec) const {
+    size_t operator()(const Vector3d& vec) const {
         size_t hx = hash<double>()(vec.x());
         size_t hy = hash<double>()(vec.y());
         size_t hz = hash<double>()(vec.z());
-        return hx ^ (hy << 1) ^ (hz << 2);  // Combina gli hash
+        return hx ^ (hy << 1) ^ (hz << 2) ;  // << sposta il numero di bit a sinsitra
+    }
+};
+
+
+//hush function for unordered set of pair
+struct pair_hash {
+    size_t operator()(const pair<unsigned int, unsigned int>& p) const {
+        size_t p1 = hash<unsigned int>()(p.first);
+        size_t p2 = hash<unsigned int>()(p.second);
+        return p1^p2 + p2^p1;
     }
 };
 
