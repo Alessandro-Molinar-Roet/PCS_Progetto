@@ -9,7 +9,6 @@ using namespace FractureNetwork;
 using namespace Gedim;
 
 void Export_paraview( vector<Fracture> &f,  vector<Trace>&t){
-
     // numero totale di punti
     int N = 0;
     for (const auto&  polygon: f){
@@ -140,15 +139,17 @@ void Export_paraview2( vector<MatrixXd> &f){
         }
     }
 
-
     // creo vettore con id raggruppati per poligono
     vector<vector<unsigned int>> polygon_vertices;
     unsigned int start_index = 0;
+    //vettore id conta quante triangoli per poligoni
+    vector<unsigned int> color;
     for (const auto&  polygon: f){
+        MatrixXd vertices = polygon;
 
         //triangolazione del poligono
         vector<Matrix3d> triangolation;
-        Vector3d fixed = polygon.col(0);
+        Vector3d fixed = vertices.col(0);
         for (unsigned int i = 1; i < polygon.cols()-1; i++){
 
             Matrix3d temp(3,3);
@@ -157,8 +158,8 @@ void Export_paraview2( vector<MatrixXd> &f){
             temp.col(2) = polygon.col(i+1);
             triangolation.push_back(temp);
         }
-
         //stesso id per stesso
+        unsigned int counter = 0;
         for(unsigned int i = 0; i < triangolation.size(); i++){
             vector<unsigned int> polygon_ids;
             Matrix3d temp = triangolation[i];
@@ -166,8 +167,10 @@ void Export_paraview2( vector<MatrixXd> &f){
                 polygon_ids.push_back(start_index);
                 start_index ++;
             }
+            counter++;
             polygon_vertices.push_back(polygon_ids);
         }
+        color.push_back(counter);
     }
 
     //inizializzo vettori propietà
@@ -175,8 +178,18 @@ void Export_paraview2( vector<MatrixXd> &f){
     vector<UCDProperty<double>> polygons_properties;
 
     VectorXi material_p(polygon_vertices.size());
-    for (int i = 0; i < material_p.size(); ++i){
-        material_p(i) = 1;
+    unsigned int position = 0;
+    unsigned int p = 1;
+    unsigned int c = 0;
+
+    for (unsigned int i = 0; i < material_p.size(); i++){
+        if(c >= color[position]){
+            c = 0;
+            p++;
+            position++;
+        }
+        material_p(i) = p;
+        c++;
     }
 
     UCDUtilities UCD;

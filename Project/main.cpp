@@ -3,63 +3,42 @@
 #include "Utils.hpp"
 #include "Geometry.hpp"
 #include <iostream>
-#include <chrono>
 
 using namespace std;
 using namespace FractureNetwork;
 
 int main()
 {
-    // Define_tol();
+    //PARTE 1:
+    Define_tol();
 
-    string filepath = "DFN_files/FR200_data.txt";
+    string filepath = "DFN_files/FR3_data.txt";
 
-    vector<Fracture> fratture;
-    vector<Trace> tracce;
+    //Inizializzazione delle strutture:
+    vector<Fracture> fratture = {};
+    vector<Trace> tracce = {};
 
+    //Letture da file:
     bool done = ImportFractures(filepath, fratture);
     if(!done){
-        cout << "Errore nell'apertura del file" << endl;
+        cerr << "Errore nell'apertura del file: " << filepath << endl;
         return 1;
     }
 
+    //Calcolo delle tracce:
     CalculateTraces(fratture,tracce);
 
-    // //CHECK:
-    // // Stampa il contenuto del vettore di tracce
-    // cout << "Contenuto del vettore di tracce:\n";
-    // for (const auto& traccia : tracce) {
-    //     cout << fixed << traccia.vertices << endl << endl;
-    // }
-
+    //Ordino tracce di ogni frattura:
     SortingFractureTraces(fratture,tracce);
 
-    // //CHECK:
-    // // Stampa di fake per verificare lo spostamento
-    // for (unsigned int i = 0; i<fratture.size();i++) {
-    //     if(!fratture[i].passing.empty() || !fratture[i].not_passing.empty()){
-    //         cout << i << " ";
-    //         if(!fratture[i].passing.empty()){
-    //             for(auto l: fratture[i].passing){
-    //                 cout << l << " ";
-    //             }
-    //         }
-    //         if(!fratture[i].not_passing.empty()){
-    //             for(auto l: fratture[i].not_passing){
-    //                 cout << l << " ";
-    //             }
-    //         }
-    //         cout << endl;
-    //     }
-    // }
-
-    //Print
+    //Print su file:
     string traceFile = "tracce.txt";
     bool printed = PrintTrace(traceFile, tracce);
     if(!printed){
-        cout << "Errore nell'apertura/creazione del file tracce.txt" << endl;
+        cerr << "Errore nell'apertura/creazione del file tracce.txt" << endl;
         return 1;
     }
+
     string tracceFile2 = "fratture_tracce.txt";
     bool printed2 = PrintFractureTraces(tracceFile2, fratture, tracce);
     if(!printed2){
@@ -67,19 +46,16 @@ int main()
         return 1;
     }
 
-    //     //PARTE 2:
-    //     //
-    //     //
-    Mesh mesh;
-    auto start = std::chrono::high_resolution_clock::now();
-    list<MatrixXd> cutted = cutting(fratture,tracce);
-    extractinfo(cutted,mesh);
-    auto end = std::chrono::high_resolution_clock::now();
+    //PARTE 2:
+    //Inizializzo struttura:
+    Mesh mesh = {};
 
-    std::chrono::duration<double> duration = end - start;
-    std::cout << "Tempo di esecuzione: " << duration.count() << " secondi" << std::endl;
+    //Taglio tutte le fratture:
+    list<MatrixXd> cutted = cutting(fratture, tracce);
 
-    cout << "okay" << endl;
+    //Converto e salvo lista di matrici in una mesh
+    extractinfo(cutted, mesh);
+
     return 0;
 }
 

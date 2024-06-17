@@ -11,8 +11,10 @@
 using namespace std;
 namespace FractureNetwork {
 
+
+//******************************************************************************************************************************************************************************************************************
 void Define_tol(){
-    //definizione delle tolleranze:
+    //chiedo delle tolleranze all'utente:
     double tol1D_user = 0.0;
     double tol2D_user = 0.0;
 
@@ -32,14 +34,14 @@ void Define_tol(){
         cout << "Inserire tolleranza 2D: \n";
     }
 
+    // affinche la tolleranza non scenda sotto un certa soglia prendo il massimo con una starndard definita nel codice
     tol2D_user = max(standard, tol1D_user*tol1D_user);
-
     tol1 = max(standard, tol1D_user);
     tol2 = max(standard, tol2D_user);
 }
 
 
-
+//******************************************************************************************************************************************************************************************************************
 bool ImportFractures(const string& filepath, vector<Fracture>& fractures){
     ifstream file;
     file.open(filepath);
@@ -78,21 +80,23 @@ bool ImportFractures(const string& filepath, vector<Fracture>& fractures){
         }
         counter ++;
     }
+
+    file.close();
     return true;
 }
 
-//********************************************************************************
+
+//******************************************************************************************************************************************************************************************************************
 void SortingFractureTraces(vector<Fracture>& fractures, vector<Trace>& traces){
     for (unsigned int i = 0; i<fractures.size(); i++){
         if(!fractures[i].passing.empty()){
             unsigned int num = size(fractures[i].passing);
-            vector<pair<unsigned int,double>> temp(num);
+            vector<pair<unsigned int, double>> temp(num);
             for(unsigned int j = 0; j<num; j++){
                 unsigned int id = fractures[i].passing[j];
                 temp[j] = make_pair(id,traces[id].length);
             }
             sort(temp.begin(), temp.end(), [](auto &left, auto &right) { return left.second > right.second;});
-            //ATTENZIONE ALTERNATIVA #include<algorihm> e funzione transform
             for(unsigned int k = 0; k<num; k++){
                 fractures[i].passing[k] = temp[k].first;
             }
@@ -100,13 +104,12 @@ void SortingFractureTraces(vector<Fracture>& fractures, vector<Trace>& traces){
 
         if(!fractures[i].not_passing.empty()){
             unsigned int num = size(fractures[i].not_passing);
-            vector<pair<unsigned int,double>> temp(num);
+            vector<pair<unsigned int, double>> temp(num);
             for(unsigned int j = 0; j<num; j++){
                 unsigned int id = fractures[i].not_passing[j];
                 temp[j] = make_pair(id,traces[id].length);
             }
             sort(temp.begin(), temp.end(), [](auto &left, auto &right) { return left.second > right.second;});
-            //ATTENZIONE ALTERNATIVA #include<algorihm> e funzione transform
             for(unsigned int k = 0; k<num; k++){
                 fractures[i].not_passing[k] = temp[k].first;
             }
@@ -114,7 +117,8 @@ void SortingFractureTraces(vector<Fracture>& fractures, vector<Trace>& traces){
     }
 }
 
-//***************************************************************************************************************
+
+//******************************************************************************************************************************************************************************************************************
 bool PrintTrace(const string& filepath, const vector<Trace>& traces){
     ofstream myfile;
     myfile.open(filepath);
@@ -124,11 +128,12 @@ bool PrintTrace(const string& filepath, const vector<Trace>& traces){
     unsigned int num = traces.size();
     myfile << "# Number of Traces" << "\n";
     myfile << num << endl;
+    myfile << fixed << setprecision(16);
     for(unsigned int i = 0; i< num; i++){
         myfile << "# TraceId; FractureId1; FractureId2; X1; Y1; Z1; X2; Y2; Z2" << endl;
         myfile << traces[i].ID << "; "
                << traces[i].first_generator << "; " << traces[i].second_generator << "; "
-               << fixed<<setprecision(12) << traces[i].vertices(0,0) << "; " << traces[i].vertices(1,0) << "; " << traces[i].vertices(2,0) << "; "
+               << fixed << traces[i].vertices(0,0) << "; " << traces[i].vertices(1,0) << "; " << traces[i].vertices(2,0) << "; "
                << traces[i].vertices(0,1) << "; " << traces[i].vertices(1,1) << "; " << traces[i].vertices(2,1) << endl;
     }
     myfile.close();
@@ -136,7 +141,7 @@ bool PrintTrace(const string& filepath, const vector<Trace>& traces){
 }
 
 
-//***************************************************************************************************************
+//******************************************************************************************************************************************************************************************************************
 bool PrintFractureTraces(const string& filepath, const  vector<Fracture>& fractures, const vector<Trace>& traces){
     ofstream myfile;
     myfile.open(filepath);
@@ -145,6 +150,7 @@ bool PrintFractureTraces(const string& filepath, const  vector<Fracture>& fractu
         return false;
     }
 
+    myfile << fixed << setprecision(16);
     for (unsigned int i = 0; i<fractures.size(); i++){
 
         vector<unsigned int> passing = fractures[i].passing;
@@ -167,8 +173,10 @@ bool PrintFractureTraces(const string& filepath, const  vector<Fracture>& fractu
             myfile << "\n\n";
         }
     }
+    myfile.close();
     return true;
 }
+
 
 }
 

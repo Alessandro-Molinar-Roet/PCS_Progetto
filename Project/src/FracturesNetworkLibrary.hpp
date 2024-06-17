@@ -10,29 +10,29 @@ using namespace Eigen;
 namespace FractureNetwork{
 
 
+// Struttura dati per salvare una frattura
+//
+// ID = Id poligono supposto uguale alla poszione in cui viene letto
+// vertices = matrice contenente coordinate {[x1 x2 x3 x4...]; [y1 y2 y3 y4...]; [z1 z2 z3 z3...]}
+// passing = vettore di Id delle tracce passanti
+// not_passing = vettore di id tracce non passanti
 struct Fracture{
-    // struttura dati per salvare una frattura
-    // ID = Id poligono supposto uguale alla poszione in cui viene letto
-    // vertices =  matrice contenente coordinate {[x1 x2 x3 x4...]; [y1 y2 y3 y4...]; [z1 z2 z3 z3...]}
-    // passing = vettore di id tracce passanti
-    // not_passing = vettore di id tracce non passanti
-
     unsigned int ID = {};
-    MatrixXd vertices {}; // ATTENZIONE arrotonda numeri //ATTENZIONE 3xn
+    MatrixXd vertices {};
 
     vector<unsigned int> passing;
     vector<unsigned int> not_passing;
 };
 
 
+// Struttura dati per salvare una traccia
+//
+// ID = id traccia corrispondente a posizione in cui viene trovata
+// length = lunghezza della traccia
+// vertices = matrice contenente coordinate estremi {[x1 x2]; [y1 y2]; [z1 z2]}
+// first_generator =  Id generatore 1
+// second_generator = Id generatore 2
 struct Trace{
-    // struttura dati per salvare una traccia
-    // ID = id traccia corrispondente a posizione in cui viene trovata
-    // length = lunghezza della traccia
-    // vertices = matrice contenente coordinate estremi {[x1 x2]; [y1 y2]; [z1 z2]}
-    // first_generator =  Id generatore 1
-    // second_generator = Id generatore 2
-
     unsigned int ID = {};
     double length = {};
     Matrix<double, 3, 2> vertices = {};
@@ -42,13 +42,21 @@ struct Trace{
 };
 
 
+// Struttura per salvare mesh generata dai tagli delle fratture lungo le tracce
+//
+// NumberCell0D = numero di punti della mesh
+// Cell0DId = vettore di usnigned int con gli Id dei punti della mesh
+// Cell0DCoordinates = vettore di Vector3d con le coordinate dei punti della mesh
+// NumberCell1D = numero di lati della mesh
+// Cell1DId = vector di unsigned int con gli Id dei lati della mesh
+// Cell1DVertices = vector di Vector2i con gli Id dei due estremi di ongi lato
+// NumberCell2D = numero di aree della mesh
+//
+// Cell2DId = vector di unsinged int con gli ID delle aree della mesh
+// Cell1DVertices = vector di vector di unsigned int con gli Id degli estremi di ongi area
+// Cell2DEdges = vector di vector di unsigned int con gli Id dei lati di ongi area
 struct Mesh
 {
-    // Struttura per salvare mesh generata dai tagli delle fratture
-    // Celle0D = punti (numero, ID, coordinate)
-    // Cell01D = lati (numero, ID, ID estremi lato)
-    // Celle2D = aree (numero, ID, ID vertici, ID lati)
-
     unsigned int NumberCell0D = 0;
     vector<unsigned int> Cell0DId = {};
     vector<Vector3d> Cell0DCoordinates = {};
@@ -64,7 +72,10 @@ struct Mesh
 };
 
 
-//hush function for unordered map of Vectro3d
+// Funzione di hash per Vector3d.
+//
+//vec = Vector3d
+// return -> il valore di hash associato al vec
 struct Vector3dHash {
     size_t operator()(const Vector3d& vec) const {
         size_t hx = hash<double>()(vec.x());
@@ -75,7 +86,10 @@ struct Vector3dHash {
 };
 
 
-//hush function for unordered set of pair
+// Funzione di hash per pair di unsigned int
+//
+// p = pair di unsigned int
+// return -> il valore di hash associato alla pair
 struct pair_hash {
     size_t operator()(const pair<unsigned int, unsigned int>& p) const {
         size_t p1 = hash<unsigned int>()(p.first);

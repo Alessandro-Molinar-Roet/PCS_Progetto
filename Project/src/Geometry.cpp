@@ -9,20 +9,22 @@
 
 namespace FractureNetwork {
 
-//calcola tutte le traccie e se sono passatnti o non passatni e le salva DOVE E COME??????
+
+//******************************************************************************************************************************************************************************************************************
 void CalculateTraces(vector<Fracture>& fractures, vector<Trace>& traces){
-    unsigned int counter = 0; //tiene il conto tracce trovate (per ID)
+    unsigned int counter = 0; //tiene il conto delle tracce trovate (per ID)
     unsigned int dim = fractures.size(); //numero di fratture
 
-    list<Trace> temp_traces = {}; // lista temporanea per salvare tracce
-    vector<list<unsigned int>>  temp_passing(dim); // posizione i = lista id tracce passanti nel poligono i
-    vector<list<unsigned int>>  temp_not_passing(dim); // posizione i = lista id tracce non passanti nel poligono i
+    list<Trace> temp_traces = {}; //lista temporanea per salvare tracce
+    vector<list<unsigned int>>  temp_passing(dim); //posizione i = lista id tracce passanti nel poligono i
+    vector<list<unsigned int>>  temp_not_passing(dim); //posizione i = lista id tracce non passanti nel poligono i
 
     for(unsigned int i = 0; i<dim; i++){ //ciclo su tutte le matrici (poligoni)
         MatrixXd fracture1 = fractures[i].vertices;
         for(unsigned int j = i+1; j<dim; j++ ){ // ciclo su tutti i poligoni >i (altre coppie gia cocntrollate)
             MatrixXd fracture2 = fractures[j].vertices;
             if(near1(fracture1, fracture2)){ //se molto lontani non controllo nemmeno intersezione
+
                 //inizializzo variabili utili
                 Vector3d E1 = {};
                 Vector3d E2 = {};
@@ -30,7 +32,7 @@ void CalculateTraces(vector<Fracture>& fractures, vector<Trace>& traces){
                 bool tips2 = true;
                 bool find = fracturesIntersection(fracture1, fracture2, E1, E2,tips1, tips2); //calcolo intersezioni
                 if(find){
-                    //Salvo variabili in struttura adeguata
+                    //Salvo traccia in temp_traces
                     Trace traccia = {};
 
                     Matrix<double,3,2> vertices = {};
@@ -41,12 +43,16 @@ void CalculateTraces(vector<Fracture>& fractures, vector<Trace>& traces){
                     traccia.ID = counter; //ID della traccia = numero in cui è stata trovata
                     traccia.first_generator = fractures[i].ID;
                     traccia.second_generator = fractures[j].ID;
-                    double length = sqrt( pow((vertices(0,0)-vertices(0,1)),2) +  pow((vertices(1,0)-vertices(1,1)),2) +  pow((vertices(2,0)-vertices(2,1)),2)); //ATTENZIONE berrone no
+
+                    double d_x = (vertices(0,0)-vertices(0,1)) * (vertices(0,0)-vertices(0,1));
+                    double d_y = (vertices(1,0)-vertices(1,1)) * (vertices(1,0)-vertices(1,1));
+                    double d_z = (vertices(2,0)-vertices(2,1)) * (vertices(2,0)-vertices(2,1));
+                    double length = sqrt(d_x + d_y + d_z);
                     traccia.length = length;
 
                     temp_traces.push_back(traccia);
 
-                    //ATTENZIONE puschback diretto su vettore ridimensionando vettore???
+                    //Salvo gli Id delle traccie in temp_passing e temp_not_passing
                     if(!tips1){
                         temp_passing[i].push_back(counter);
                     }
@@ -66,55 +72,62 @@ void CalculateTraces(vector<Fracture>& fractures, vector<Trace>& traces){
         }
     }
 
-    //ATTENZIONE Vicini resize più sicuro ma si rompe con resize
-    //ATTENZIONE serve sapere cosa fa move?
+    //Sposto le tracce da una lista ad un vettore
     traces.reserve(size(temp_traces));
     move(begin(temp_traces), end(temp_traces), back_inserter(traces));
 
+    //Sposto le liste degli Id delle tracce di ogni frattura in vettori e le salvo nelle fratture
     for(unsigned int i = 0; i<dim; i++){
         fractures[i].passing.reserve(temp_passing[i].size());
         move(begin(temp_passing[i]), end(temp_passing[i]), back_inserter(fractures[i].passing));
         fractures[i].not_passing.reserve(temp_not_passing[i].size());
         move(begin(temp_not_passing[i]), end(temp_not_passing[i]), back_inserter(fractures[i].not_passing));
-
     }
 }
 
-//***************************************************************************************************************
+
+//******************************************************************************************************************************************************************************************************************
 Vector3d normalP(const MatrixXd& fracture){
     Vector3d v1 = fracture.col(1)-fracture.col(0);
     Vector3d v2 = fracture.col(2)-fracture.col(1);
     return v1.cross(v2).normalized();
 }
 
-//***************************************************************************************************************
-bool lineFractIntersect(const MatrixXd& fracture, const Vector3d& pointOnLine,const Vector3d& direction,vector<Vector3d>& intersections){
 
-    for(unsigned int i=0;i<fracture.cols();i++){
+//******************************************************************************************************************************************************************************************************************
+bool lineFractIntersect(const MatrixXd& fracture, const Vector3d& pointOnLine,const Vector3d& direction,vector<Vector3d>& intersections){
+    unsigned int num_v = fracture.cols();
+
+    for(unsigned int i=0;i< num_v;i++){
         //intersezione lato-retta
         Vector3d ithFractureVertex = fracture.col(i);
-        Vector3d ithFractureEdge =fracture.col((i+1)%fracture.cols())-fracture.col(i);
+        Vector3d ithFractureEdge = fracture.col((i+1) % num_v) - fracture.col(i);
 
-        if(abs(ithFractureEdge.cross(direction).norm())<tol2){
+        Vector3d cross1 = ithFractureEdge.cross(direction);
+        double norm1 = cross1.norm();
+
+        if(abs(norm1)<tol2){
             if((ithFractureVertex-pointOnLine).cross(direction).isZero(tol2)){
                 intersections.push_back(ithFractureVertex);
                 intersections.push_back(fracture.col((i+1)%fracture.cols()));
-
+                return true;
             }
-            continue;
         }
-        double t = ((pointOnLine.cross(direction)).dot((ithFractureEdge.cross(direction)))-(ithFractureVertex.cross(direction)).dot((ithFractureEdge.cross(direction))))/(ithFractureEdge.cross(direction).norm()*ithFractureEdge.cross(direction).norm());
-        if (t >= -tol2 && t <= 1.0+tol2){
-            intersections.push_back(ithFractureVertex + t * ithFractureEdge);
-        }
-        if(intersections.size()==2){
-            return true;
+        else{
+            double t = ((pointOnLine.cross(direction)).dot(cross1)-(ithFractureVertex.cross(direction)).dot(cross1))/(norm1*norm1);
+            if (t >= -tol2 && t <= 1.0+tol2){
+                intersections.push_back(ithFractureVertex + t * ithFractureEdge);
+            }
+            if(intersections.size()==2){
+                return true;
+            }
         }
     }
     return false;
 }
 
-//***************************************************************************************************************
+
+//******************************************************************************************************************************************************************************************************************
 bool fracturesIntersection(const MatrixXd& fracture1,const MatrixXd& fracture2, Vector3d& E1, Vector3d& E2, bool& tips1, bool& tips2)
 {
     //Considero la retta di intersezione tra i due piani che contengono i poligoni
@@ -231,8 +244,8 @@ bool fracturesIntersection(const MatrixXd& fracture1,const MatrixXd& fracture2, 
     return false;
 }
 
-//***************************************************************************************************************
-// Bounding box:
+
+//******************************************************************************************************************************************************************************************************************
 bool near1(const MatrixXd& fracture1, const MatrixXd& fracture2){
     bool check = true;
 
@@ -253,8 +266,8 @@ bool near1(const MatrixXd& fracture1, const MatrixXd& fracture2){
     return check;
 }
 
+
 //***************************************************************************************************************
-// Intersezione sfere circoscrtite
 bool near2(const MatrixXd& fracture1, const MatrixXd& fracture2){
     bool check = true;
     VectorXd bar_fracture1 = fracture1.colwise().mean();
@@ -287,19 +300,25 @@ bool near2(const MatrixXd& fracture1, const MatrixXd& fracture2){
 
 
 
+
 //PARTE 2
-//***************************************************************************************************************
+//******************************************************************************************************************************************************************************************************************
 bool IsInside(const MatrixXd& frattura, const Vector3d& puntoRetta,const Vector3d& direzione,vector<Vector3d>& intersezioni, vector<unsigned int>& lato){
     unsigned int counter = 1;
     unsigned int meet1 = 0;
     unsigned int meet2 = 0;
 
-    for(unsigned int i= 0; i<frattura.cols();i++){
-        Vector3d puntoipoly = frattura.col(i);
-        Vector3d latoipoly =frattura.col((i+1) % frattura.cols())-frattura.col(i);
+    unsigned int num_v = frattura.cols();
 
-        if(!(latoipoly.cross(direzione)).isZero(tol2)){
-            double t = ((puntoRetta.cross(direzione)).dot((latoipoly.cross(direzione)))-(puntoipoly.cross(direzione)).dot((latoipoly.cross(direzione))))/(latoipoly.cross(direzione).norm()*latoipoly.cross(direzione).norm());
+    for(unsigned int i= 0; i< num_v; i++){
+        Vector3d puntoipoly = frattura.col(i);
+        Vector3d latoipoly =frattura.col((i+1) % num_v) - frattura.col(i);
+
+        Vector3d cross1 = latoipoly.cross(direzione);
+        double norm1 = latoipoly.cross(direzione).norm();
+
+        if(!cross1.isZero(tol2)){
+            double t = ((puntoRetta.cross(direzione)).dot(cross1)-(puntoipoly.cross(direzione)).dot(cross1))/(norm1*norm1);
 
             if ( (t > (-tol2)) && (t < (1.0+tol2)) ){
                 intersezioni.push_back(puntoipoly + t * latoipoly);
@@ -316,19 +335,20 @@ bool IsInside(const MatrixXd& frattura, const Vector3d& puntoRetta,const Vector3
         }
         else{
             if((puntoipoly-puntoRetta).cross(direzione).isZero(tol1)){
-                //ATTENZIONE CONTROLLO COMPRESO
-                cout << "fakes" << endl;
                 lato.push_back(counter);
             }
         }
         counter++; //passo al lato successivo
     }
+
     if(meet1 == 1 || meet2 == 1){
         return true;
     }
     return false;
 }
 
+
+//******************************************************************************************************************************************************************************************************************
 void split(const MatrixXd& polygon, const vector<unsigned int>& all, const vector<Trace>& tracce, unsigned int counter, list<MatrixXd>& cutted){
     //inizializzazione variabili
     unsigned int current;
@@ -418,6 +438,8 @@ void split(const MatrixXd& polygon, const vector<unsigned int>& all, const vecto
     }
 }
 
+
+//******************************************************************************************************************************************************************************************************************
 list<MatrixXd> cutting(vector<Fracture>& fratture, vector<Trace>& tracce){ // const
     list<MatrixXd> cutted = {};  // lista con le fratture tagliate (ogni matrice ha i vertici di un taglio)
 
@@ -443,16 +465,11 @@ list<MatrixXd> cutting(vector<Fracture>& fratture, vector<Trace>& tracce){ // co
         }
     }
 
-    // // CHECK:
-    // for(auto const& i :cutted)
-    //     cout << i << endl << endl;
-
-    cout << "tracce: " << tracce.size() << endl;
-    cout << "cutted: "<<cutted.size() << endl;
-
     return cutted;
 }
 
+
+//******************************************************************************************************************************************************************************************************************
 void extractinfo(const list<MatrixXd>& cutted, Mesh& mesh){
     unsigned int dim = cutted.size();
 
@@ -475,6 +492,7 @@ void extractinfo(const list<MatrixXd>& cutted, Mesh& mesh){
     C2V.reserve(dim);  //stima dimesione
     vector<vector<unsigned int>> C2E;
     C2E.reserve(dim);  //stima dimesione
+
 
     unsigned int Idp = 0;
     unsigned int position = 0;
@@ -533,44 +551,30 @@ void extractinfo(const list<MatrixXd>& cutted, Mesh& mesh){
                     postion_edge =  result2.first->second;
                 }
 
+                //Celle2D
                 edges.push_back(postion_edge);
             }
 
-            prev = position;
+            //Celle2D
             if(i<polygon.cols()){
                 vertices.push_back(position);
             }
+
+            prev = position;
         }
+
+        //Celle2D
         C2V.push_back(vertices);
         C2E.push_back(edges);
     }
 
-    //CHECk:
-    // cout << "punti" << endl;
-    // for(unsigned int i = 0; i<C0Id.size(); i++){
-    //     cout << C0Id[i] << ": " << C0[i].transpose() << endl;
-    // }
-    // cout << endl;
+    //ridemensione vettori
+    C0Id.reserve(Idp);
+    C0.reserve(Idp);
+    C1Id.reserve(Ide);
+    C1V.reserve(Ide);
 
-    // cout << "lati" << endl;
-    // for(unsigned int i = 0; i<C1Id.size(); i++){
-    //     cout << C1Id[i] << ": " << C1V[i].transpose() << " (  " << C0[C1V[i][0]].transpose() << ", " << C0[C1V[i][1]].transpose() << " )" << endl;
-    // }
-
-    // cout << endl;
-    // cout << "aree" << endl;
-    // for(unsigned int i = 0; i<C2Id.size(); i++){
-    //     cout << C2Id[i] << ": ";
-    //     for(unsigned int j = 0; j<C2V[i].size(); j++){
-    //         cout << C2V[i][j] << ", ";
-    //     }
-    //     cout << "    ";
-    //     for(unsigned int k = 0; k<C2E[i].size(); k++){
-    //         cout << C2E[i][k] << ", ";
-    //     }
-    //     cout << endl;
-    // }
-
+    //salvo nella mesh
     mesh.NumberCell0D = Idp;
     mesh.Cell0DId = C0Id;
     mesh.Cell0DCoordinates = C0;

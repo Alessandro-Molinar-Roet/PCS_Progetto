@@ -10,7 +10,7 @@ using namespace FractureNetwork;
 
 int main()
 {
-    string filepath = "DFN_files/FR82_data.txt";
+    string filepath = "DFN_files/FR10_data.txt";
 
     vector<Fracture> fratture;
     vector<Trace> tracce;
