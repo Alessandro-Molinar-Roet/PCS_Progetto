@@ -126,11 +126,8 @@ TEST(lineFractIntersectTest, lineFractIntersectTest_intersection_Test)
 // ***************************************************************************
 TEST(splitTest, splitTest_split_Test)
 {
-    // FractureNetwork::Fracture fracture1;
-    // unsigned int i = 0;
-    // fracture1.ID = i;
-    Matrix3Xd fracture_split(3,4);
-    fracture_split << 0.0, 1.0, 1.0, 0.0,
+    Matrix3Xd fracture(3,4);
+    fracture << 0.0, 1.0, 1.0, 0.0,
                       0.0, 0.0, 1.0, 1.0,
                       0.0, 0.0, 0.0, 0.0;
     vector<unsigned int> all = {0};
@@ -158,8 +155,56 @@ TEST(splitTest, splitTest_split_Test)
                 0.0, 0.0, 0.0, 0.0;
     list<MatrixXd> result = {matrice1, matrice2};
 
-    split(fracture_split, all, tracce, counter, cutted);
+    split(fracture, all, tracce, counter, cutted);
     EXPECT_EQ(cutted, result);
+
+    //Caso con 2 tracce non passanti
+    vector<unsigned int> all_2 = {0, 1};
+
+    Trace tr1;
+    Trace tr2;
+    tr1.ID = 0;
+    tr2.ID = 1;
+    tr1.length = 0.5;
+    tr2.length = 0.25;
+
+    tr1.vertices << 0.25, 0.75,
+        0.5, 0.5,
+        0.0, 0.0;
+    tr2.vertices << 0.875, 0.875,
+        0.375, 0.625,
+        0.0, 0.0;
+
+    tr1.first_generator = 0;
+    tr1.second_generator = 1;
+    tr2.first_generator = 2;
+    tr2.second_generator = 3;
+
+    vector<Trace> tracce_2 = {tr1, tr2};
+    list<MatrixXd> cutted_2 = {};
+
+    MatrixXd matrice3(3,4);
+    matrice3 << 0.0, 0.875, 0.875, 0.0,
+        0.0, 0.0, 0.5, 0.5,
+        0.0, 0.0, 0.0, 0.0;
+    MatrixXd matrice4(3,4);
+    matrice4 << 1.0, 1.0, 0.875, 0.875,
+        0.0, 0.5, 0.5, 0.0,
+        0.0, 0.0, 0.0, 0.0;
+    MatrixXd matrice5(3,4);
+    matrice5 << 1.0, 0.875, 0.875, 1.0,
+        1.0, 1.0, 0.5, 0.5,
+        0.0, 0.0, 0.0, 0.0;
+    MatrixXd matrice6(3,4);
+    matrice6 << 0.0, 0.0, 0.875, 0.875,
+        1.0, 0.5, 0.5, 1.0,
+        0.0, 0.0, 0.0, 0.0;
+
+    list<MatrixXd> result_2 = {matrice3, matrice4, matrice5, matrice6};
+
+    split(fracture, all_2, tracce_2, counter, cutted_2);
+
+    EXPECT_EQ(cutted_2, result_2);
 }
 
 }
