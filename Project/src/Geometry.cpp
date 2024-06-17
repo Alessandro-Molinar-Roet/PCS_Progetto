@@ -463,22 +463,22 @@ void extractinfo(const list<MatrixXd>& cutted, Mesh& mesh){
     //inizializzo strutture dati necessarie
     unordered_map<Vector3d, unsigned int, Vector3dHash> map_point;
     vector<unsigned int> C0Id;
-    C0Id.reserve(dim*4);
+    C0Id.reserve(dim*4); //stima dimesione
     vector<Vector3d> C0;
-    C0.reserve(dim*4);
+    C0.reserve(dim*4);  //stima dimesione
 
     unordered_set<pair<unsigned int, unsigned int>,pair_hash> set_edge;
     vector<unsigned int> C1Id;
-    C1Id.reserve(dim*4);
+    C1Id.reserve(dim*4); //stima dimesione
     vector<Vector2i> C1V;
-    C1Id.reserve(dim*4);
+    C1Id.reserve(dim*4); //stima dimesione
 
     vector<unsigned int> C2Id;
-    C2Id.reserve(dim);
+    C2Id.reserve(dim); //stima dimesione
     vector<vector<unsigned int>> C2V;
-    C2V.reserve(dim);
+    C2V.reserve(dim);  //stima dimesione
     vector<vector<unsigned int>> C2E;
-    C2E.reserve(dim);
+    C2E.reserve(dim);  //stima dimesione
 
     unsigned int Idp = 0;
     unsigned int position = 0;
