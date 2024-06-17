@@ -70,9 +70,9 @@ package UCDUtilities <<Frame>>
 {
 }
 
-Traces ..[thickness=2]> Fracture : created by intersection of 2
-Traces --[thickness=2]> Geometry
-Traces --[thickness=2]> Utils
+Trace ..[thickness=2]> Fracture : created by intersection of 2
+Trace --[thickness=2]> Geometry
+Trace --[thickness=2]> Utils
 Fracture --[thickness=2]> Geometry
 Fracture --[thickness=2]> Utils
 DFN --[thickness=2]> DFN_Paraview
