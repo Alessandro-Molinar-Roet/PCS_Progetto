@@ -21,7 +21,7 @@ void CalculateTraces(vector<Fracture>& fractures, vector<Trace>& traces){
 
     for(unsigned int i = 0; i<dim; i++){ //ciclo su tutte le matrici (poligoni)
         MatrixXd fracture1 = fractures[i].vertices;
-        for(unsigned int j = i+1; j<dim; j++ ){ // ciclo su tutti i poligoni >i (altre coppie gia cocntrollate)
+        for(unsigned int j = i+1; j<dim; j++ ){ // ciclo su tutti i poligoni >i (altre coppie gia controllate)
             MatrixXd fracture2 = fractures[j].vertices;
             if(near1(fracture1, fracture2)){ //se molto lontani non controllo nemmeno intersezione
 
@@ -176,7 +176,7 @@ bool fracturesIntersection(const MatrixXd& fracture1,const MatrixXd& fracture2, 
     double a = ((intersections[0]-pointOnLine).dot(direction))/(direction.norm()*direction.norm());
     double b = ((intersections[1]-pointOnLine).dot(direction))/(direction.norm()*direction.norm());
     //a e b sono delle posizioni relative a pointOnLine, ma non so come sono ordinati perché questo dipende
-    //dal senso di lettura dei lati dei poligoni e dalla posizione relativa alla retta
+    //dalla posizione relativa alla retta
     if(abs(a-b)<tol1){ //i due punti di intersezione sono sovrapposti
         return false;
     }
