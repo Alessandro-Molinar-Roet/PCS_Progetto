@@ -38,16 +38,15 @@ class Mesh
 }
 class Vector3dHash
 {
-+ operator : size_t(Vector3d)
++ operator() : size_t(Vector3d)
 }
 class pair_hash
 {
-+ operator() : size_t
-+ pair : unsigned int, unsigned int
++ operator() : size_t(pair : unsigned int, unsigned int)
 }
 }
 
-package DFN <<Folder>> #ForestGreen
+package Funzioni <<Folder>> #ForestGreen
 {
 
 abstract class Geometry
@@ -121,10 +120,10 @@ class Punto2
 
 
 FractureNetworkLibrary --[thickness=2]> Punto1
-main --[thickness=2]> DFN
-DFN --[thickness=2]> DFN_Paraview
+main --[thickness=2]> Funzioni
+Funzioni --[thickness=2]> DFN_Paraview
 DFN_Paraview --[thickness=2]> UCDUtilities
-DFN --[thickness=2]> DFN_Test
+Funzioni --[thickness=2]> DFN_Test
 
 FractureNetworkLibrary --[thickness=2]> Punto2
 
