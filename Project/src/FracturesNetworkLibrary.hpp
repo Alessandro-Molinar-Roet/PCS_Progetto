@@ -45,7 +45,7 @@ struct Trace{
 // Struttura per salvare mesh generata dai tagli delle fratture lungo le tracce
 //
 // NumberCell0D = numero di punti della mesh
-// Cell0DId = vettore di usnigned int con gli Id dei punti della mesh
+// Cell0DId = vettore di unsigned int con gli Id dei punti della mesh
 // Cell0DCoordinates = vettore di Vector3d con le coordinate dei punti della mesh
 // NumberCell1D = numero di lati della mesh
 // Cell1DId = vector di unsigned int con gli Id dei lati della mesh
