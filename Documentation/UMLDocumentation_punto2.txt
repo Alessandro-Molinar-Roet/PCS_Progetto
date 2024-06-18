@@ -3,7 +3,7 @@ package FracturesNetworkLibrary <<Folder>> #DarkSlateBlue
 {
 class Fracture 
 {
-+ IDfractures: unsigned int
++ ID: unsigned int
 + Vertices: MatrixXd
 + Passing : vector<unsigned int>
 + Not passing : vector<unsigned int>
@@ -11,7 +11,7 @@ class Fracture
 }
 class Trace
 {
-+ IDTraces : unsigned int
++ ID : unsigned int
 + Length : double
 + Vertices : Matrix<double,3,2>
 + First_generator : unsigned int
@@ -37,19 +37,14 @@ class Mesh
 }
 class Vector3dHash
 {
-operator() : size_t
-+ hx : size_t
-+ hy : size_t
-+ hz : size_t 
++ operator() : size_t Vector3d
 }
 class pair_hash
 {
-+ operator() : size_t
-+ p1 : size_t
-+ p2 : size_t
++ operator() : size_t pair(unsigned int, unsigned int)
 }
 }
-package DFN <<Folder>> #mediumPurple
+package Funzioni <<Folder>> #mediumPurple
 {
 abstract class Geometry
 {
@@ -57,6 +52,12 @@ abstract class Geometry
 + cutting(fratture, tracce) : list<MatrixXd>
 + split(polygon, passing, tracce, counter, cutted) : void
 + extractinfo(cutted, mesh)
+}
+abstract class tol
+{
++ standard : extern const double
++ tol1 : extern double
++ tol2 : extern double
 }
 }
 
@@ -73,7 +74,7 @@ Mesh --[thickness=2]> Geometry
 Fracture --[thickness=2]> Geometry
 Vector3dHash --[thickness=2]> Geometry
 pair_hash --[thickness=2]> Geometry
-DFN --[thickness=2]> DFNTest
+Funzioni --[thickness=2]> DFNTest
 
 note left of Geometry::isInside
 <color:Blue> MatrixXd, Vector3d, Vector3d, vector<Vector3d>, vector<unsigned int>
