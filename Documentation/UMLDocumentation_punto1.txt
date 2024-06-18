@@ -1,6 +1,6 @@
 @startuml
 
-package FracturesNetworkLibrary <<Folder>> #Yellow
+package FracturesNetworkLibrary <<Folder>> #LightSeaGreen
 {
 class Fracture 
 {
@@ -20,7 +20,7 @@ class Trace
 }
 }
 
-package DFN <<Folder>> #LightGreen
+package DFN <<Folder>> %darken("Aqua",10)
 {
 
 abstract class Geometry
@@ -46,7 +46,7 @@ abstract class Utils
 }
 
 }
-package DFN_Paraview <<Folder>> #LightBlue
+package DFN_Paraview <<Folder>> #Aquamarine
 {
 class Paraview 
 {
@@ -54,7 +54,7 @@ class Paraview
 + Export_paraview2(vector<MatrixXd>)
 }
 }
-package DFN_Test <<Folder>> #Violet
+package DFN_Test <<Folder>> #APPLICATION
 {
 class Tests
 {
