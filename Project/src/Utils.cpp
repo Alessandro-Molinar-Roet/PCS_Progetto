@@ -34,7 +34,7 @@ void Define_tol(){
         cout << "Inserire tolleranza 2D: \n";
     }
 
-    // affinche la tolleranza non scenda sotto un certa soglia prendo il massimo con una starndard definita nel codice
+    // affinchè la tolleranza non scenda sotto un certa soglia prendo il massimo con una starndard definita nel codice
     tol2D_user = max(standard, tol1D_user*tol1D_user);
     tol1 = max(standard, tol1D_user);
     tol2 = max(standard, tol2D_user);
@@ -55,9 +55,9 @@ bool ImportFractures(const string& filepath, vector<Fracture>& fractures){
     unsigned int num = stoi(line);
     fractures.resize(num);
 
-    //ciclo su linee file
-    //matrix_counter conta quante matrici ho gia letto
-    //counter conta per ogni matrice a che linea di info sono arrivato (ogni matrice occupa 6 righe [0,5])
+    // ciclo su linee file
+    // matrix_counter conta quante matrici ho già letto
+    // counter conta per ogni matrice a che linea di info sono arrivato (ogni matrice occupa 6 righe [0,5])
     unsigned int counter = 0;
     unsigned int matrix_counter = 0;
     unsigned int num_vertices = 0;
