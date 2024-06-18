@@ -54,7 +54,7 @@ struct Trace{
 //
 // Cell2DId = vector di unsinged int con gli ID delle aree della mesh
 // Cell1DVertices = vector di vector di unsigned int con gli Id degli estremi di ongi area
-// Cell2DEdges = vector di vector di unsigned int con gli Id dei lati di ongi area
+// Cell2DEdges = vector di vector di unsigned int con gli Id dei lati di ogni area
 struct Mesh
 {
     unsigned int NumberCell0D = 0;
