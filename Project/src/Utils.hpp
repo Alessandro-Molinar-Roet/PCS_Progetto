@@ -18,7 +18,7 @@ void Define_tol();
 //
 // filepath = percorso dove si trova il file da leggere
 // fractures = vettore passato per referenza in cui vengono salvate le fratture
-// return -> un boleano che indica se il file è stato aperto correttamente
+// return -> un booleano che indica se il file è stato aperto correttamente
 bool ImportFractures(const string& filepath, vector<Fracture>& fractures);
 
 
@@ -26,7 +26,7 @@ bool ImportFractures(const string& filepath, vector<Fracture>& fractures);
 //
 // filepath = percorso dove si trova il file da leggere
 // fractures = vettore passato per referenza in cui vengono salvate le fratture
-// return -> un boleano che indica se il file è stato aperto correttamente
+// return -> un booleano che indica se il file è stato aperto correttamente
 void SortingFractureTraces(vector<Fracture>& fractures, vector<Trace>& traces);
 
 
@@ -34,7 +34,7 @@ void SortingFractureTraces(vector<Fracture>& fractures, vector<Trace>& traces);
 //
 // filepath = nome del file su cui stampare
 // traces = vettore di tracce da stampare
-// return -> boleano che indica se la creazione/ apertura del file è andata a buon fine
+// return -> booleano che indica se la creazione/ apertura del file è andata a buon fine
 bool PrintTrace(const string& file_name, const vector<Trace>& traces);
 
 
@@ -43,7 +43,7 @@ bool PrintTrace(const string& file_name, const vector<Trace>& traces);
 // file_name = nome del file su cui stampare
 // fractures = vettore di fratture
 // traces = vettore di tracce
-// return -> boleano che indica se la creazione/ apertura del file è andata a buon fine
+// return -> booleano che indica se la creazione/ apertura del file è andata a buon fine
 bool PrintFractureTraces(const string& file_name, const vector<Fracture>& fractures, const vector<Trace>& traces);
 
 
