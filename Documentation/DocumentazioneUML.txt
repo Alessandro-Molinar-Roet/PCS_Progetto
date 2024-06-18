@@ -1,6 +1,6 @@
 @startuml
 
-package FracturesNetworkLibrary <<Folder>> %darken("darkgreen",30)
+package FractureNetworkLibrary <<Folder>> %darken("darkgreen",30)
 {
 class Fracture 
 {
@@ -59,17 +59,19 @@ abstract class Geometry
 + CalculateTraces(fractures, traces) : void
 + normalP (fracture) : Vector3d
 + lineFractIntersect(fracture, pointOnLine, directions, intersections) : bool
-+ applyThreshold (vec) : Vector3d
 + fracturesIntersection(fracture1, fracture2, E1, E2, tips1, tips2) : bool
 + near1(fracture1, fracture2) : bool
 + near2(fracture1, fracture2) : bool
 }
 abstract class tol
 {
-+ tol : const double
++ standard : extern const double
++ tol1 : extern double
++ tol2 : extern double
 }
 abstract class Utils
 {
++ Define_tol() : void
 + ImportFractures(filepath, fractures) : bool
 + SortingFractureTraces(fractures, traces) : void
 + PrintTrace(filepath, traces) : bool
@@ -133,17 +135,16 @@ class Tests_2
 }
 }
 
-FracturesNetworkLibrary --[thickness=2]> Punto1
+FractureNetworkLibrary --[thickness=2]> Punto1
 Punto1 --[thickness=2]> DFN_Punto1
 main --[thickness=2]> DFN_Punto1
 DFN_Punto1 --[thickness=2]> DFN_Paraview
 DFN_Paraview --[thickness=2]> UCDUtilities
 DFN_Punto1 --[thickness=2]> DFN_Test1
 
-FracturesNetworkLibrary --[thickness=2]> Punto2
+FractureNetworkLibrary --[thickness=2]> Punto2
 DFN_Punto2 --[thickness=2]> DFNTest_2
 
-main --[thickness=2]> DFN_Punto1
 main --[thickness=2]> DFN_Punto2
 
 note left of Geometry::CalculateTraces
@@ -154,9 +155,6 @@ note left of Geometry::normalP
 end note
 note left of Geometry::lineFractIntersect
 <color:Blue> (MatrixXd, Vector3d, Vector3d vector<Vector3d>)
-end note
-note left of Geometry::applyThreshold
-<color:Blue> (Vector3d)
 end note
 note left of Geometry::fracturesIntersection
 <color:Blue> (MatrixXd, MatrixXd, Vector3d, Vector3d, bool, bool)
