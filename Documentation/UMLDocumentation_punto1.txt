@@ -4,15 +4,15 @@ package FracturesNetworkLibrary <<Folder>> #LightSeaGreen
 {
 class Fracture 
 {
-+ IDfractures: unsigned int
-+ Vertices: MatrixXd
++ ID : unsigned int
++ Vertices : MatrixXd
 + Passing : vector<unsigned int>
 + Not passing : vector<unsigned int>
 
 }
 class Trace
 {
-+ IDTraces : unsigned int
++ ID : unsigned int
 + Length : double
 + Vertices : Matrix<double,3,2>
 + First_generator : unsigned int
@@ -20,7 +20,7 @@ class Trace
 }
 }
 
-package DFN <<Folder>> %darken("Aqua",10)
+package Funzioni <<Folder>> %darken("Aqua",10)
 {
 
 abstract class Geometry
@@ -53,7 +53,6 @@ package DFN_Paraview <<Folder>> #Aquamarine
 class Paraview 
 {
 + Export_paraview(vector<Fracture>, vector<Trace>)
-+ Export_paraview2(vector<MatrixXd>)
 }
 }
 package DFN_Test <<Folder>> #APPLICATION
@@ -77,9 +76,9 @@ Trace --[thickness=2]> Geometry
 Trace --[thickness=2]> Utils
 Fracture --[thickness=2]> Geometry
 Fracture --[thickness=2]> Utils
-DFN --[thickness=2]> DFN_Paraview
+Funzioni --[thickness=2]> DFN_Paraview
 DFN_Paraview --[thickness=2]> UCDUtilities
-DFN --[thickness=2]> DFN_Test
+Funzioni --[thickness=2]> DFN_Test
 
 note left of Geometry::CalculateTraces
 <color:Blue> (vector<Fracture>, vector<Traces>)
