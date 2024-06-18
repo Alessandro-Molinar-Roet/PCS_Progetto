@@ -43,7 +43,12 @@ operator() : size_t
 + hy : size_t
 + hz : size_t 
 }
-
+class pair_hash
+{
++ operator() : size_t
++ p1 : size_t
++ p2 : size_t
+}
 }
 
 package DFN_Punto1 <<Folder>> #ForestGreen
