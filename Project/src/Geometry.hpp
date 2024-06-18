@@ -8,8 +8,8 @@ namespace FractureNetwork{
 
 // Funzione per calcolare tutte le tracce date dall'intersezioni tra fratture
 //
-//fractures = vettore di fratture, passato per referenza per andare a inserie gli ID delle tracce che contiene
-//traces = vettore di tracce, passato per refernza per riempirlo con le tracce trovate
+//fractures = vettore di fratture, passato per referenza per andare ad inserire gli ID delle tracce che contiene
+//traces = vettore di tracce, passato per referenza per riempirlo con le tracce trovate
 void CalculateTraces(vector<Fracture>& fractures, vector<Trace>& traces);
 
 
@@ -24,7 +24,7 @@ bool near1(const MatrixXd& fracture1, const MatrixXd& fracture2);
 
 
 // Funzione alternativa a near 1 (NON utilizzata, solo per confronto empirico)
-// sfrutta metodo delle circoferenze inscirtte
+// sfrutta metodo delle circoferenze circoscritte
 //
 // fracture1 = MatrixXd conenente i vertici della frattura numero 1
 // fracture2 = MatrixXd conenente i vertici della frattura numero 2
