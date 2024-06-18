@@ -19,9 +19,9 @@ void CalculateTraces(vector<Fracture>& fractures, vector<Trace>& traces){
     vector<list<unsigned int>>  temp_passing(dim); //posizione i = lista id tracce passanti nel poligono i
     vector<list<unsigned int>>  temp_not_passing(dim); //posizione i = lista id tracce non passanti nel poligono i
 
-    for(unsigned int i = 0; i<dim; i++){ //ciclo su tutte le matrici (poligoni)
+    for(unsigned int i = 0; i<dim; i++){ //ciclo su tutte le matrici (fratture)
         MatrixXd fracture1 = fractures[i].vertices;
-        for(unsigned int j = i+1; j<dim; j++ ){ // ciclo su tutti i poligoni >i (altre coppie gia controllate)
+        for(unsigned int j = i+1; j<dim; j++ ){ // ciclo su tutte le fratture >i (altre coppie gia controllate)
             MatrixXd fracture2 = fractures[j].vertices;
             if(near1(fracture1, fracture2)){ //se molto lontani non controllo nemmeno intersezione
 
