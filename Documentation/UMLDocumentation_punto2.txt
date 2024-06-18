@@ -60,7 +60,13 @@ abstract class tol
 + tol2 : extern double
 }
 }
-
+package DFNParaview <<Folder>> %darken("magenta",25)
+{
+class Paraview
+{
++ export_paraview2 : (vector<MatrixXd>)
+}
+}
 package DFNTest <<Folder>> %darken("magenta",25)
 {
 class Tests
@@ -75,6 +81,7 @@ Fracture --[thickness=2]> Geometry
 Vector3dHash --[thickness=2]> Geometry
 pair_hash --[thickness=2]> Geometry
 Funzioni --[thickness=2]> DFNTest
+Funzioni --[thickness=2]> DFNParaview
 
 note left of Geometry::isInside
 <color:Blue> MatrixXd, Vector3d, Vector3d, vector<Vector3d>, vector<unsigned int>
