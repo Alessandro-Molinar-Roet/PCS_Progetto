@@ -4,7 +4,7 @@ package FractureNetworkLibrary <<Folder>> %darken("darkgreen",30)
 {
 class Fracture 
 {
-+ IDfractures: unsigned int
++ ID: unsigned int
 + Vertices: MatrixXd
 + Passing : vector<unsigned int>
 + Not passing : vector<unsigned int>
@@ -12,7 +12,7 @@ class Fracture
 }
 class Trace
 {
-+ IDTraces : unsigned int
++ ID: unsigned int
 + Length : double
 + Vertices : Matrix<double,3,2>
 + First_generator : unsigned int
@@ -38,20 +38,16 @@ class Mesh
 }
 class Vector3dHash
 {
-operator() : size_t
-+ hx : size_t
-+ hy : size_t
-+ hz : size_t 
++ operator : size_t(Vector3d)
 }
 class pair_hash
 {
 + operator() : size_t
-+ p1 : size_t
-+ p2 : size_t
++ pair : unsigned int, unsigned int
 }
 }
 
-package DFN_Punto1 <<Folder>> #ForestGreen
+package DFN <<Folder>> #ForestGreen
 {
 
 abstract class Geometry
@@ -62,6 +58,10 @@ abstract class Geometry
 + fracturesIntersection(fracture1, fracture2, E1, E2, tips1, tips2) : bool
 + near1(fracture1, fracture2) : bool
 + near2(fracture1, fracture2) : bool
++ isInside(frattura, tr1, direzione, intersezioni, lato) : bool
++ cutting(fratture, tracce) : list<MatrixXd>
++ split(polygon, passing, tracce, counter, cutted) : void
++ extractinfo(cutted, mesh)
 }
 abstract class tol
 {
@@ -87,7 +87,7 @@ class Paraview
 + Export_paraview2(vector<MatrixXd>)
 }
 }
-package DFN_Test1 <<Folder>> #lightGreen
+package DFN_Test <<Folder>> #lightGreen
 {
 class Tests
 {
@@ -97,6 +97,7 @@ class Tests
 + near2Test
 + nearDifferenceTest
 + UCDTest
++ splitTest
 }
 }
 package UCDUtilities <<Frame>> #LightSkyBlue
@@ -106,46 +107,28 @@ package main <<Folder>> %darken("green",10)
 {
 class Punto1
 {
-+ Fracture
-+ Trace
++ Fractures
++ Traces
 }
 class Punto2
 {
-+ Fracture
-+ Trace
++ Fractures
++ Traces
 + Mesh
 + Vector3dHash
 }
 }
-package DFN_Punto2 <<Folder>> #LimeGreen
-{
-abstract class Geometry_2
-{
-+ isInside(frattura, tr1, direzione, intersezioni, lato) : bool
-+ cutting(fratture, tracce) : list<MatrixXd>
-+ split(polygon, passing, tracce, counter, cutted) : void
-+ extractinfo(cutted, mesh)
-}
-}
-package DFNTest_2 <<Folder>> %lighten("physical",20)
-{
-class Tests_2
-{
-+ splitTest
-}
-}
+
 
 FractureNetworkLibrary --[thickness=2]> Punto1
-Punto1 --[thickness=2]> DFN_Punto1
-main --[thickness=2]> DFN_Punto1
-DFN_Punto1 --[thickness=2]> DFN_Paraview
+main --[thickness=2]> DFN
+DFN --[thickness=2]> DFN_Paraview
 DFN_Paraview --[thickness=2]> UCDUtilities
-DFN_Punto1 --[thickness=2]> DFN_Test1
+DFN --[thickness=2]> DFN_Test
 
 FractureNetworkLibrary --[thickness=2]> Punto2
-DFN_Punto2 --[thickness=2]> DFNTest_2
 
-main --[thickness=2]> DFN_Punto2
+
 
 note left of Geometry::CalculateTraces
 <color:Blue> (vector<Fracture>, vector<Traces>)
@@ -179,17 +162,23 @@ note left of Utils::PrintFractureTraces
 <color:Blue> (string, vector<Fracture>, vector <Trace>)
 end note
 
-note left of Geometry_2::isInside
+note left of Geometry::isInside
 <color:Blue> MatrixXd, Vector3d, Vector3d, vector<Vector3d>, vector<unsigned int>
 end note
-note left of Geometry_2::cutting
+note left of Geometry::cutting
 <color:Blue> vector<Fracture>, vector<Trace>
 end note
-note left of Geometry_2::split
+note left of Geometry::split
 <color:Blue> MatrixXd, vector<unsigned int>, vector<Trace>, unsigned int, list<MatrixXd>
 end note
-note left of Geometry_2::extractinfo
+note left of Geometry::extractinfo
 <color:Blue> list<MatrixXd>, Mesh
 end note
 
+note right of Punto2::Fractures
+<color:Blue> vector<Fracture>
+end note
+note right of Punto2::Traces
+<color:Blue> vector<Trace>
+end note
 @enduml
